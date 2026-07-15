@@ -96,7 +96,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
     fetch(`${RAG_URL}/api/rag/status`)
       .then(r => r.json())
       .then(setRagStatus)
-      .catch(() => setRagStatus({ ready: false, indexed: 0, message: 'RAG server offline' }));
+      .catch(() => setRagStatus({ ready: false, indexed: 0, message: 'AI guide coming soon' }));
   }, []);
 
   // Auto-scroll
@@ -132,7 +132,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'bot',
-        text: `⚠️ Could not reach the RAG server at ${RAG_URL}. Make sure \`python app.py\` is running in the \`rag/\` folder.`,
+       text: 'The AI craft guide is coming soon. In the meantime, browse the map to find verified artisans near you — every profile shows their craft, trust score, workshop details and how to book a visit.',
         isError: true,
       }]);
     } finally {
@@ -179,7 +179,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
       {/* ── RAG offline banner ───────────────────────────────────── */}
       {ragStatus && !ragStatus.ready && (
         <div className="rc__offline-banner">
-          <strong>RAG server not running.</strong>{' '}
+          <strong>AI guide coming soon.</strong>{' '}
           Open a terminal in <code>crafttrail/rag/</code> and run:{' '}
           <code>python app.py</code>
         </div>
