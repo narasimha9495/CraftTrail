@@ -42,7 +42,7 @@ const tier3Schema = new mongoose.Schema(
 const artisanSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, index: true },
-    phone: { type: String, default: null, unique: true, sparse: true },
+    phone: { type: String, unique: true, sparse: true },
     craft: { type: String, required: true },
     claimedGi: { type: String, default: null },
     bio: { type: String, default: '' },

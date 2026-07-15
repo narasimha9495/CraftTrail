@@ -6,8 +6,6 @@ export const useAuth = () => useContext(AuthCtx);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  // `loading` stays true until the first /me settles, so the header never
-  // flashes "Sign in" at somebody who is already signed in.
   const [loading, setLoading] = useState(Boolean(getToken()));
 
   useEffect(() => {
@@ -15,7 +13,7 @@ export function AuthProvider({ children }) {
     api
       .me()
       .then((d) => setUser(d.user))
-      .catch(() => setToken(null)) // an expired token is not an error worth showing
+      .catch(() => setToken(null))
       .finally(() => setLoading(false));
   }, []);
 

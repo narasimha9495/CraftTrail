@@ -14,6 +14,9 @@ import {
 import { webhook, prompt, institutionProxy } from '../controllers/whatsappController.js';
 import { register, login, me, updateMe, myBookings, changePassword, deleteAccount } from '../controllers/authController.js';
 import * as admin from '../controllers/adminController.js';
+import * as vault from '../controllers/vaultController.js';
+import { uploadArtisanImages, getArtisanImages } from '../controllers/artisanImagesController.js';
+import { saveArtisan, unsaveArtisan, markVisited, getSavedVisited } from '../controllers/savedController.js';
 
 const router = Router();
 
@@ -30,7 +33,7 @@ router.get('/auth/me/bookings', requireAuth, myBookings);
 
 // --- Discovery: public. Signing in personalises it; it never gates it. ---
 router.get('/discover',        optionalAuth, discover);
-router.get('/discover/search', searchArtisans);          // direct artisan search (no cluster needed)
+router.get('/discover/search', searchArtisans);
 router.get('/discover/artisans/:id', artisanDetail);
 router.get('/clusters', listClusters);
 router.get('/crafts', listCrafts);
@@ -71,11 +74,8 @@ router.get('/certificates/:code/verify', verifyCertificateRoute);
 // VAULT — Hidden admin portal. Not linked anywhere in the public UI.
 // Access: /api/vault/*   (frontend hidden route: /guildmaster)
 // ═══════════════════════════════════════════════════════════════════
-import * as vault from '../controllers/vaultController.js';
+router.post('/vault/login',    vault.vaultLogin);
 
-router.post('/vault/login',    vault.vaultLogin);   // public — no auth needed to login
-
-// All routes below require a valid admin JWT
 router.get ('/vault/stats',                              vault.requireVault, vault.vaultStats);
 router.get ('/vault/artisans',                           vault.requireVault, vault.vaultListArtisans);
 router.post('/vault/artisans',                           vault.requireVault, vault.vaultCreateArtisan);
@@ -83,29 +83,23 @@ router.get ('/vault/artisans/:id',                       vault.requireVault, vau
 router.patch('/vault/artisans/:id',                      vault.requireVault, vault.vaultUpdateArtisan);
 router.delete('/vault/artisans/:id',                     vault.requireVault, vault.vaultDeleteArtisan);
 
-// Verification docs
 router.post  ('/vault/artisans/:id/docs',                vault.requireVault, upload.single('file'), vault.vaultAddDoc);
 router.delete('/vault/artisans/:id/docs/:docId',         vault.requireVault, vault.vaultDeleteDoc);
 
-// Certificates
 router.post  ('/vault/artisans/:id/certificates',        vault.requireVault, upload.single('file'), vault.vaultAddCertificate);
 router.delete('/vault/artisans/:id/certificates/:certId',vault.requireVault, vault.vaultDeleteCertificate);
 
-// Awards
 router.post  ('/vault/artisans/:id/awards',              vault.requireVault, upload.single('image'), vault.vaultAddAward);
 router.delete('/vault/artisans/:id/awards/:awardId',     vault.requireVault, vault.vaultDeleteAward);
 
-// Product history
 router.post  ('/vault/artisans/:id/products',            vault.requireVault, upload.single('image'), vault.vaultAddProduct);
 router.delete('/vault/artisans/:id/products/:productId', vault.requireVault, vault.vaultDeleteProduct);
 
 // --- Artisan image uploads (workplace & product photos) ----------------
-import { uploadArtisanImages, getArtisanImages } from '../controllers/artisanImagesController.js';
 router.post('/artisans/:id/images', upload.array('images', 10), uploadArtisanImages);
 router.get('/artisans/:id/images', getArtisanImages);
 
 // --- Saved & visited artisans (for map overlay) -------------------------
-import { saveArtisan, unsaveArtisan, markVisited, getSavedVisited } from '../controllers/savedController.js';
 router.get('/me/saved', requireAuth, getSavedVisited);
 router.post('/me/saved/:artisanId', requireAuth, saveArtisan);
 router.delete('/me/saved/:artisanId', requireAuth, unsaveArtisan);

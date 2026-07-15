@@ -134,6 +134,33 @@ button { font-family: inherit; font-size: inherit; cursor: pointer; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .pad { padding: 60px 24px; }
+/* ---- RAG chatbot panel: constrain size + scroll ---- */
+/* Targets the floating chat dialog and its content so long answers
+   scroll inside the box instead of overflowing the window. */
+
+[class*="chat"] [class*="panel"],
+[class*="chat"] [class*="message"],
+[class*="craftbot"],
+[class*="CraftBot"] {
+  max-width: 100% !important;
+  max-height: 72vh !important;
+  overflow-y: auto !important;
+  font-size: 0.82rem !important;
+  line-height: 1.45 !important;
+}
+
+/* shrink the craft cards inside the answer */
+[class*="chat"] [class*="card"],
+[class*="craft-card"] {
+  padding: 8px 10px !important;
+  font-size: 0.78rem !important;
+  margin-bottom: 6px !important;
+}
+
+/* tighten headings and list spacing */
+[class*="chat"] h3,
+[class*="chat"] h4 { font-size: 0.8rem !important; margin: 10px 0 4px !important; }
+[class*="chat"] li { margin-bottom: 3px !important; }
 
 /* ---------- leaflet ---------- */
 .leaflet-container { background: var(--sunk); font-family: var(--body); }
@@ -148,3 +175,56 @@ button { font-family: inherit; font-size: inherit; cursor: pointer; }
   background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong);
 }
 .leaflet-popup-content { margin: 12px 14px; }
+/* ---- State Detail Modal: contain, balance columns, scroll ---- */
+.sdm__panel {
+  max-width: 1080px !important;
+  width: 92vw !important;
+  max-height: 88vh !important;
+  margin: auto !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+}
+
+/* two balanced columns: content flexes wider, chat holds a fixed share */
+.sdm__grid {
+  display: grid !important;
+  grid-template-columns: 1.35fr 1fr !important;
+  gap: 0 !important;
+  height: 88vh !important;
+  max-height: 88vh !important;
+}
+
+/* left column scrolls internally instead of pushing the modal taller */
+.sdm__left {
+  overflow-y: auto !important;
+  max-height: 88vh !important;
+  padding: 24px !important;
+}
+
+/* right chat column: its own scroll, subtle divider */
+.sdm__right {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 88vh !important;
+  overflow: hidden !important;
+  border-left: 1px solid rgba(0,0,0,0.08) !important;
+}
+.sdm__chat-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 12px 16px !important;
+}
+
+/* craft cards: two per row, tighter */
+.sdm__crafts {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+}
+.sdm__craft-card { padding: 12px !important; }
+
+/* stack to one column on narrow screens so nothing gets crushed */
+@media (max-width: 860px) {
+  .sdm__grid { grid-template-columns: 1fr !important; height: auto !important; }
+  .sdm__right { border-left: none !important; border-top: 1px solid rgba(0,0,0,0.08) !important; }
+}

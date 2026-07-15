@@ -1125,7 +1125,7 @@ async function run() {
   await User.create({
     name: 'Tourism Department',
     email: adminEmail,
-    passwordHash: await bcrypt.hash(adminPass, 10),
+   passwordHash: await bcrypt.hash(adminPass, 10),
     role: 'admin',
   });
   console.log(`[seed] admin -> ${adminEmail} / ${adminPass}`);
@@ -1180,7 +1180,7 @@ async function run() {
   console.log(`[seed] ${REAL_ARTISANS.length} hand-written artisans (1 deliberately fails Tier 1)`);
 
   // ---- Dataset-backed artisans from the uploaded craft file ----
-  const datasetPath = path.resolve(fileURLToPath(new URL('../../rag/data/Final_Dataset_Craft.txt', import.meta.url)));
+  const datasetPath = path.resolve(fileURLToPath(new URL('../../../rag/data/Final_Dataset_Craft.txt', import.meta.url)));
   const datasetRows = parseCraftDatasetRows(datasetPath);
   const datasetSeeds = buildDatasetArtisanSeeds(datasetRows);
   if (datasetSeeds.length) {

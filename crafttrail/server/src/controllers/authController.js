@@ -18,7 +18,7 @@ export async function register(req, res, next) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, passwordHash, role: 'tourist' });
+    const user = await User.create({ name, email, passwordHash, role: 'user' });
     res.status(201).json({ token: sign(user._id), user: user.toPublic() });
   } catch (err) {
     if (err.code === 11000) {
@@ -80,7 +80,6 @@ export async function myBookings(req, res, next) {
       upcoming: bookings.filter((b) => b.status !== 'COMPLETED' && b.status !== 'CANCELLED' && b.date >= now),
       past: bookings.filter((b) => b.status === 'COMPLETED'),
       cancelled: bookings.filter((b) => b.status === 'CANCELLED'),
-      // "Places visited" is derived, not a second store that can drift
       visited: bookings
         .filter((b) => b.status === 'COMPLETED' && b.artisan)
         .map((b) => ({

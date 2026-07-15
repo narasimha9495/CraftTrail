@@ -15,3 +15,18 @@
 }
 .au__demo strong { color: var(--ink-mid); font-weight: 500; }
 .au__demo code { font-family: var(--mono); font-size: .95em; }
+.au__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--ink-dim);
+  font-size: .78rem;
+}
+.au__divider::before,
+.au__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
