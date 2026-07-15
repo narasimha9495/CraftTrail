@@ -24,7 +24,7 @@ load_dotenv()
 import retriever
 
 app  = Flask(__name__)
-PORT = int(os.getenv("FLASK_PORT", 5050))
+PORT = int(os.getenv("PORT", os.getenv("FLASK_PORT", 5050)))
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
