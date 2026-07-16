@@ -61,6 +61,9 @@ const userLocationIcon = () =>
 function Recenter({ lat, lng, zoom }) {
   const map = useMap();
   useEffect(() => {
+  setTimeout(() => map.invalidateSize(), 100);
+}, [map]);
+  useEffect(() => {
     map.flyTo([lat, lng], zoom, { duration: 0.8 });
   }, [lat, lng, zoom, map]);
   return null;
@@ -81,8 +84,10 @@ export default function MapView({
 
   // Basemap follows the theme, so the pins always carry the colour.
   const tiles = isDark
+
+
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+   : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   return (
     <MapContainer

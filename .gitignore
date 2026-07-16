@@ -8,3 +8,8 @@ node_modules/
 dist/
 .env
 venv/
+
+android/
+capacitor.config.json
+
+android/

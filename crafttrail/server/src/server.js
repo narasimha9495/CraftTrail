@@ -10,7 +10,27 @@ import { notFound, errorHandler } from './middleware/error.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
+/**
+ * CORS.
+ *
+ * CLIENT_URL alone breaks every time you switch between local dev and the
+ * deployed site, and Vercel hands out a fresh random subdomain on every preview
+ * deploy. So: allow anything in CLIENT_URL (comma-separated), plus any
+ * localhost port, plus any craft-trail Vercel domain.
+ */
+const allowed = (process.env.CLIENT_URL || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);                                  // curl, health checks
+    if (allowed.includes(origin)) return cb(null, true);
+    if (/^http:\/\/localhost:\d+$/.test(origin)) return cb(null, true);  // any local port
+    if (/^https:\/\/craft-trail.*\.vercel\.app$/.test(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
