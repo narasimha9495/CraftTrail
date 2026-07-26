@@ -21,8 +21,8 @@ export default function Header() {
           </Link>
 
           <nav className="hd__nav">
-            <NavLink to="/discover" className={({ isActive }) => (isActive ? 'is-on' : '')}>
-              Discover
+           <NavLink to="/plan" className={({ isActive }) => (isActive ? 'is-on' : '')}>
+              🗺️ Plan a Trip
             </NavLink>
 
             {/* Heritage Explorer — only visible when logged in, goes to landing page state cards */}

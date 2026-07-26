@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../lib/api.js';
 import { CITIES } from '../lib/constants.js';
@@ -38,11 +37,17 @@ function planRoute(start, stops) {
   return ordered;
 }
 
+// Keeps the map sized right and framed: fits the route when there is one,
+// otherwise snaps to India. The invalidateSize call fixes the blank/oversized
+// map that happens when the container measures before tiles load.
 function FitBounds({ points }) {
   const map = useMap();
   useEffect(() => {
+    setTimeout(() => map.invalidateSize(), 100);
     if (points.length > 1) {
       map.fitBounds(points.map((p) => [p[1], p[0]]), { padding: [40, 40] });
+    } else {
+      map.setView(INDIA_CENTER, 5);
     }
   }, [points, map]);
   return null;
@@ -77,6 +82,9 @@ export default function Plan() {
   const totalKm = route ? route.reduce((s, r) => s + r.legKm, 0) : 0;
   const linePoints = route
     ? [[startCity.lat, startCity.lng], ...route.map((r) => [r.coordinates[1], r.coordinates[0]])]
+    : [];
+  const fitPoints = route
+    ? [[startCity.lng, startCity.lat], ...route.map((r) => r.coordinates)]
     : [];
 
   return (
@@ -126,15 +134,25 @@ export default function Plan() {
 
         <div className="plan__map-wrap">
           <MapContainer center={INDIA_CENTER} zoom={5} className="plan__map" scrollWheelZoom>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-            {route && <FitBounds points={[[startCity.lng, startCity.lat], ...route.map((r) => r.coordinates)]} />}
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; OpenStreetMap contributors"
+            />
+            <FitBounds points={fitPoints} />
             {route && linePoints.length > 1 && (
               <Polyline positions={linePoints} pathOptions={{ color: '#a96b45', weight: 3, dashArray: '6 6' }} />
             )}
             {route?.map((r, i) => (
-              <CircleMarker key={r._id} center={[r.coordinates[1], r.coordinates[0]]} radius={12}
-                pathOptions={{ color: '#a96b45', fillColor: '#c4906c', fillOpacity: 0.9 }}>
-                <Popup><strong>{i + 1}. {r.name}</strong><br />{r.craft} · {r.legKm} km</Popup>
+              <CircleMarker
+                key={r._id}
+                center={[r.coordinates[1], r.coordinates[0]]}
+                radius={13}
+                pathOptions={{ color: '#a96b45', fillColor: '#c4906c', fillOpacity: 0.9 }}
+              >
+                <Popup>
+                  <strong>{i + 1}. {r.name}</strong><br />
+                  {r.craft} · {r.legKm} km
+                </Popup>
               </CircleMarker>
             ))}
           </MapContainer>
@@ -148,7 +166,7 @@ export default function Plan() {
             <li className="plan__start">Start: {startCity.name}</li>
             {route.map((r, i) => (
               <li key={r._id}>
-                <strong>{r.name}</strong> — {r.craft}
+                <span><strong>{i + 1}. {r.name}</strong> — {r.craft}</span>
                 <span className="plan__leg">+{r.legKm} km</span>
               </li>
             ))}
