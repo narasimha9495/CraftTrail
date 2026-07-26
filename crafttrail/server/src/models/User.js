@@ -10,11 +10,13 @@ const userSchema = new mongoose.Schema(
     active: { type: Boolean, default: true },
     interests: { type: [String], default: [] },
     homeCity: { name: String, lat: Number, lng: Number, state: String },
-    prefs: {
+   prefs: {
       theme: { type: String, default: 'clay' },
       typeface: { type: String, default: 'classic' },
       lang: { type: String, default: 'en' },
     },
+    savedArtisans:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'Artisan' }],
+    visitedArtisans: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Artisan' }],
   },
   { timestamps: true }
 );

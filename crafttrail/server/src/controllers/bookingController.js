@@ -4,6 +4,7 @@ import Verifier from '../models/Verifier.js';
 import Review from '../models/Review.js';
 import Certificate from '../models/Certificate.js';
 import AuditLog from '../models/AuditLog.js';
+import User from '../models/User.js';
 import {
   createEscrow,
   verifyQrToken,
@@ -135,7 +136,14 @@ export async function completeBooking(req, res, next) {
     if (!ok) return res.status(400).json({ error: 'Invalid QR token for this booking' });
 
     booking.payment = settleEscrow(booking.payment.toObject());
-    booking.status = 'COMPLETED';
+      booking.status = 'COMPLETED';
+    if (booking.tourist?.email) {
+      await User.findOneAndUpdate(
+        { email: booking.tourist.email.toLowerCase() },
+        { $addToSet: { visitedArtisans: booking.artisan._id } }
+      );
+    }
+
 
     const cert = await issueCertificate({
       booking,
