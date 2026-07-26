@@ -7,6 +7,7 @@ import BookingPanel from '../components/BookingPanel.jsx';
 import WhatsAppSim from '../components/WhatsAppSim.jsx';
 import RagChatbot from '../components/RagChatbot.jsx';
 import ArtisanImageUpload from '../components/ArtisanImageUpload.jsx';
+import CultureCards from '../components/CultureCards.jsx';
 import { api } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { inr, shortDate } from '../lib/format.js';
@@ -191,6 +192,7 @@ export default function ArtisanProfile() {
               {audit.length === 0 && <li className="muted">No entries yet.</li>}
             </ul>
           </section>
+          <CultureCards artisan={a} />
         </main>
 
         <aside className="profile__side">
