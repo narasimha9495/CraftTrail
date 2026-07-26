@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth.jsx';
 import { api } from '../lib/api.js';
 import { inr, todayPlus } from '../lib/format.js';
 import './BookingPanel.css';
+import { CURRENCIES, getRates, convert, getSavedCurrency, setSavedCurrency } from '../lib/currency.js';
 
 /**
  * The whole loop, in one panel: request → confirm → escrow held → QR scanned
@@ -30,8 +31,13 @@ export default function BookingPanel({ artisan, onChanged }) {
   const [booking, setBooking] = useState(null);
   const [escrow, setEscrow] = useState(null);
   const [qr, setQr] = useState(null);
+  const [currency, setCurrency] = useState(getSavedCurrency());
+  const [rates, setRates] = useState({});
+  useEffect(() => { getRates().then(setRates); }, []);
+  const pickCurrency = (c) => { setCurrency(c); setSavedCurrency(c); };
   const [result, setResult] = useState(null);
 
+  
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const unavailable = artisan.availability.state === 'UNAVAILABLE';
   const total = artisan.workshop.priceInr * Number(form.partySize || 1);
@@ -146,11 +152,28 @@ export default function BookingPanel({ artisan, onChanged }) {
               />
             </div>
           </div>
-          <div className="field">
-            <label htmlFor="bp-msg">Anything the artisan should know</label>
-            <textarea id="bp-msg" className="textarea" value={form.message} onChange={set('message')} />
-          </div>
-
+          <div className="bp__total">
+          <span>Total</span>
+          <strong className="mono">
+            {inr(total)}
+            {currency !== 'INR' && rates[currency] && (
+              <span className="bp__conv"> (~{convert(total, currency, rates)})</span>
+            )}
+          </strong>
+        </div>
+        <div className="bp__currency">
+          <label htmlFor="bp-currency">Show prices in</label>
+          <select
+            id="bp-currency"
+            className="input"
+            value={currency}
+            onChange={(e) => pickCurrency(e.target.value)}
+          >
+            {Object.entries(CURRENCIES).map(([code, c]) => (
+              <option key={code} value={code}>{code} — {c.label}</option>
+            ))}
+          </select>
+        </div>
           <div className="bp__total">
             <span>Total</span>
             <strong className="mono">{inr(total)}</strong>

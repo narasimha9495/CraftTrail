@@ -5,9 +5,8 @@ import Artisan from '../models/Artisan.js';
 export async function getSavedVisited(req, res, next) {
   try {
     const user = await User.findById(req.user._id)
-      .populate('savedArtisans',   'name craft district state location photos trustScore')
-      .populate('visitedArtisans', 'name craft district state location photos trustScore');
-
+.populate('savedArtisans',   'name craft district state location photos trustScore priceInr')
+      .populate('visitedArtisans', 'name craft district state location photos trustScore priceInr');
     res.json({
       saved:   user.savedArtisans   || [],
       visited: user.visitedArtisans || [],

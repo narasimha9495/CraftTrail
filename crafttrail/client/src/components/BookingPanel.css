@@ -45,3 +45,6 @@
   border-radius: var(--r); margin: 0 0 16px;
   word-break: break-all;
 }
+.bp__conv { color: var(--ink-dim); font-weight: 400; font-size: .85em; }
+.bp__currency { margin: 12px 0; }
+.bp__currency label { display: block; font-size: .75rem; color: var(--ink-dim); margin-bottom: 4px; }

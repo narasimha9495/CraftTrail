@@ -34,9 +34,10 @@ export default function SavedVisitedMap() {
   const shown = filter === 'all'
     ? all
     : all.filter(a => a.status === filter);
-
-  const totalSaved   = data.saved.length;
+const totalSaved   = data.saved.length;
   const totalVisited = data.visited.length;
+  const statesVisited = new Set(data.visited.map((a) => a.state).filter(Boolean)).size;
+  const rupeesSupported = data.visited.reduce((sum, a) => sum + (a.priceInr || 0), 0);
 
   if (loading) {
     return (
@@ -63,6 +64,14 @@ export default function SavedVisitedMap() {
           <div className="svm__stat">
             <span className="svm__stat-num" style={{ color: '#27ae60' }}>{totalVisited}</span>
             <span className="svm__stat-label">Visited</span>
+          </div>
+          <div className="svm__stat">
+            <span className="svm__stat-num" style={{ color: 'var(--accent)' }}>{statesVisited}</span>
+            <span className="svm__stat-label">States</span>
+          </div>
+          <div className="svm__stat">
+            <span className="svm__stat-num" style={{ color: 'var(--accent-2)' }}>₹{rupeesSupported.toLocaleString('en-IN')}</span>
+            <span className="svm__stat-label">Supported</span>
           </div>
         </div>
       </div>
