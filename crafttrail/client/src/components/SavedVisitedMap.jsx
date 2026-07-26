@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, LayerGroup } from 'react-
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import './SavedVisitedMap.css';
+import JourneyStamps from './JourneyStamps.jsx';
 
 const INDIA_CENTER = [22.5, 82.5];
 const SERVER = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
@@ -200,7 +201,9 @@ export default function SavedVisitedMap() {
                 <div className="svm__list-score">{a.trustScore ?? '—'}</div>
               </Link>
             ))}
+            
           </div>
+          <JourneyStamps visited={data.visited} />
         </div>
       )}
     </div>
