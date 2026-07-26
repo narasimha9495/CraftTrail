@@ -3,27 +3,17 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { shortDate } from '../lib/format.js';
 import './Certificate.css';
-
-/**
- * The one screen that inverts. Everything else in CraftTrail is the indigo vat;
- * the certificate is the undyed cloth pulled out of it. A tourist is going to
- * screenshot this, so it has to read as a physical artifact, not a UI card.
- *
- * The tamper check is live: we call /verify and show what came back. We do not
- * claim a blockchain. We claim an HMAC signature, which is what we actually did.
- */
+import CraftPattern, { CraftSeal } from '../components/CraftPattern.jsx';
 export default function Certificate() {
   const { code } = useParams();
   const [cert, setCert] = useState(null);
   const [check, setCheck] = useState(null);
   const [err, setErr] = useState(null);
   const [copied, setCopied] = useState(false);
-
   useEffect(() => {
     api.certificate(code).then(setCert).catch((e) => setErr(e.message));
     api.verifyCertificate(code).then(setCheck).catch(() => {});
   }, [code]);
-
   const share = async () => {
     const url = window.location.href;
     const text = `I learned ${cert.snapshot.craft} from ${cert.snapshot.artisanName} in ${cert.snapshot.district}. Verified artisan.`;
@@ -32,14 +22,12 @@ export default function Certificate() {
         await navigator.share({ title: 'CraftTrail', text, url });
         return;
       } catch {
-        /* user dismissed the sheet; fall through to copy */
       }
     }
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
-
   if (err) {
     return (
       <div className="cert-page">
@@ -51,11 +39,8 @@ export default function Certificate() {
       </div>
     );
   }
-
   if (!cert) return <div className="cert-page"><span className="spinner" /></div>;
-
   const s = cert.snapshot;
-
   return (
     <div className="cert-page">
       <article className="paper">
@@ -66,15 +51,21 @@ export default function Certificate() {
           </div>
           <p className="paper__code">{cert.code}</p>
         </header>
+          <CraftPattern craft={s.craft} color="#c8863e" height={44} />
+
+        <div className="paper__body"></div>
 
         <div className="paper__body">
           <p className="paper__lede">
             <span>{cert.touristName}</span> visited the workshop of
           </p>
-
-          <h1 className="paper__artisan">{s.artisanName}</h1>
-          <p className="paper__craft">{s.craft}</p>
-
+<div className="paper__hero">
+          <div>
+            <h1 className="paper__artisan">{s.artisanName}</h1>
+            <p className="paper__craft">{s.craft}</p>
+          </div>
+          <CraftSeal craft={s.craft} size={110} />
+        </div>
           <dl className="paper__facts">
             <div>
               <dt>Geographical Indication</dt>
