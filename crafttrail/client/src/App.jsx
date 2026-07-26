@@ -10,6 +10,7 @@ import Certificate from './pages/Certificate.jsx';
 import Admin from './pages/Admin.jsx';
 import Journey from './pages/Journey.jsx';
 import Guildmaster from './pages/Guildmaster.jsx';
+import Plan from './pages/Plan.jsx';
 
 export default function App() {
   const loc = useLocation();
@@ -27,7 +28,7 @@ export default function App() {
         {/* Reading is public. Acting requires an account. */}
         <Route path="/discover" element={<Explore personalised={false} />} />
         <Route path="/artisan/:id" element={<ArtisanProfile />} />
-
+<Route path="/plan" element={<Plan />} />
         {/* A shared certificate must open for someone with no account, ever. */}
         <Route path="/cert/:code" element={<Certificate />} />
 
