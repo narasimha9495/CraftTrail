@@ -19,7 +19,15 @@
 
 .ex__interests { margin-top: 20px; }
 .ex__interests .eyebrow { display: block; margin-bottom: 9px; }
-.ex__chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.ex__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 82px;
+  overflow: hidden;
+  position: relative;
+  transition: max-height .35s ease;
+}
 .ichip {
   border: 1px solid var(--line); background: var(--surface); color: var(--ink-mid);
   border-radius: 99px; padding: 6px 13px; font-size: .78rem;
@@ -51,3 +59,22 @@
 
 /* Standalone artisans divider */
 .ex__divider { display:flex; align-items:center; gap:10px; padding:10px 0 4px; color:var(--resist-dim); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; } .ex__divider::before,.ex__divider::after { content:''; flex:1; height:1px; background:var(--line); }
+.ex__chips.is-expanded { max-height: 400px; }
+.ex__chips:not(.is-expanded)::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 34px;
+  background: linear-gradient(to bottom, transparent, var(--ground));
+  pointer-events: none;
+}
+.ex__chips-toggle {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  color: var(--accent);
+  font-size: .78rem;
+  padding: 5px 14px;
+  border-radius: 99px;
+}
+.ex__chips-toggle:hover { border-color: var(--accent); }
