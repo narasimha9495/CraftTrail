@@ -1,24 +1,78 @@
-
-.lp__hero {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
-  padding: 64px 24px 60px; align-items: center;
+/* ── Scroll-snap slide structure ─────────────────────────────── */
+.lp {
+  overflow-x: hidden;
 }
-.lp__copy h1 { margin-top: 14px; max-width: 15ch; }
-.lp__copy h1 .script { font-size: 1.05em; }
-.lp__sub { margin: 22px 0 0; max-width: 50ch; font-size: 1.02rem; color: var(--ink-mid); }
+
+/* ── Slide 1: full-bleed hero photo with overlaid text ──────── */
+.lp__hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  position: relative;
+  color: #fff;
+  overflow: hidden;
+}
+.lp__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/hero.jpg') center/cover no-repeat;
+  z-index: 0;
+}
+.lp__hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, rgba(30,20,14,0.94) 0%, rgba(30,20,14,0.74) 45%, rgba(30,20,14,0.35) 100%);
+  z-index: 1;
+}
+.lp__hero .lp__copy {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  padding: 0 48px;
+  margin: 0 auto 0 8%;
+}
+.lp__hero .eyebrow { color: #e0b98a; }
+.lp__hero h1 { color: #fff; max-width: 18ch; margin-top: 14px; }
+.lp__hero h1 .script { font-size: 1.05em; color: #e8a97e; }
+.lp__hero .lp__sub { margin: 22px 0 0; max-width: 50ch; font-size: 1.02rem; color: rgba(255,255,255,0.86); }
+.lp__hero .lp__fine { color: rgba(255,255,255,0.6); }
+
 .lp__cta { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
 .lp__cta .btn { text-decoration: none; }
-.lp__fine { margin: 14px 0 0; font-size: .76rem; color: var(--ink-dim); max-width: 44ch; }
+/* ghost button reads on the dark photo */
+.lp__btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.5);
+  color: #fff;
+}
+.lp__btn-ghost:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+.lp__fine { margin: 14px 0 0; font-size: .76rem; max-width: 44ch; }
 
-.lp__loom {
-  padding: 0; overflow: hidden; height: 460px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; background: var(--surface);
+/* scroll cue at the bottom of the hero */
+.lp__scrollcue {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  color: rgba(255,255,255,0.7);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: cue-bounce 2s ease-in-out infinite;
 }
-.lp__loom svg {
-  width: 100%; max-width: 340px; height: auto; flex: 1;
-  padding: 28px 20px 0;
-}
-.lp__loom .lp__maphint { width: 100%; }
+@keyframes cue-bounce { 0%,100%{transform:translate(-50%,0)} 50%{transform:translate(-50%,6px)} }
+
+.lp__copy h1 .script { font-size: 1.05em; }
+.lp__sub { color: var(--ink-mid); }
 
 .lp__map { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .lp__map .map { flex: 1; border-radius: 0; }
@@ -100,9 +154,8 @@
   z-index: 5;
 }
 
-/* FIXED SECTION: Stays neatly clipped inside rounded corners & renders underneath tooltips */
 .state-card__pattern {
-  position: absolute; 
+  position: absolute;
   inset: 0;
   border-radius: var(--r-lg);
   overflow: hidden;
@@ -110,96 +163,32 @@
   transform: translateZ(0);
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
-.state-card__pattern::before { 
-  content: ""; 
-  position: absolute; 
-  inset: 0; 
+.state-card__pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  opacity: .9; 
+  opacity: .9;
 }
 
-/* Telangana */
-.swatch--ikat .state-card__pattern::before{
-    background:url("/telangana.jpg") center/cover no-repeat;
-}
+.swatch--ikat .state-card__pattern::before{ background:url("/telangana.jpg") center/cover no-repeat; }
+.swatch--kalamkari .state-card__pattern::before{ background:url("/andhra.jpg") center/cover no-repeat; }
+.swatch--blockprint .state-card__pattern::before{ background:url("/rajasthan.jpg") center/cover no-repeat; }
+.swatch--bandhani .state-card__pattern::before{ background:url("/gujarat.jpg") center/cover no-repeat; }
+.swatch--silk .state-card__pattern::before{ background:url("/karnataka.jpg") center/cover no-repeat; }
+.swatch--bronze .state-card__pattern::before{ background:url("/tn.jpg") center/cover no-repeat; }
+.swatch--kantha .state-card__pattern::before{ background:url("/westbengal.jpg") center/cover no-repeat; }
+.swatch--pattachitra .state-card__pattern::before{ background:url("/odisha.jpg") center/cover no-repeat; }
+.swatch--chikankari .state-card__pattern::before{ background:url("/up.jpg") center/cover no-repeat; }
+.swatch--gond .state-card__pattern::before{ background:url("/mp.jpg") center/cover no-repeat; }
+.swatch--madhubani .state-card__pattern::before{ background:url("/bihar.jpg") center/cover no-repeat; }
+.swatch--muga .state-card__pattern::before{ background:url("/assam.jpg") center/cover no-repeat; }
+.swatch--coir .state-card__pattern::before{ background:url("/kerala.jpg") center/cover no-repeat; }
+.swatch--pashmina .state-card__pattern::before{ background:url("/kashmir.jpg") center/cover no-repeat; }
+.swatch--phulkari .state-card__pattern::before{ background:url("/punjab.jpg") center/cover no-repeat; }
+.swatch--kullu .state-card__pattern::before{ background:url("/himachal.jpg") center/cover no-repeat; }
 
-/* Andhra Pradesh */
-.swatch--kalamkari .state-card__pattern::before{
-    background:url("/andhra.jpg") center/cover no-repeat;
-}
-
-/* Rajasthan */
-.swatch--blockprint .state-card__pattern::before{
-    background:url("/rajasthan.jpg") center/cover no-repeat;
-}
-
-/* Gujarat */
-.swatch--bandhani .state-card__pattern::before{
-    background:url("/gujarat.jpg") center/cover no-repeat;
-}
-
-/* Karnataka */
-.swatch--silk .state-card__pattern::before{
-    background:url("/karnataka.jpg") center/cover no-repeat;
-}
-
-/* Tamil Nadu */
-.swatch--bronze .state-card__pattern::before{
-    background:url("/tn.jpg") center/cover no-repeat;
-}
-
-/* West Bengal */
-.swatch--kantha .state-card__pattern::before{
-    background:url("/westbengal.jpg") center/cover no-repeat;
-}
-
-/* Odisha */
-.swatch--pattachitra .state-card__pattern::before{
-    background:url("/odisha.jpg") center/cover no-repeat;
-}
-
-/* Uttar Pradesh */
-.swatch--chikankari .state-card__pattern::before{
-    background:url("/up.jpg") center/cover no-repeat;
-}
-
-/* Madhya Pradesh */
-.swatch--gond .state-card__pattern::before{
-    background:url("/mp.jpg") center/cover no-repeat;
-}
-
-/* Bihar */
-.swatch--madhubani .state-card__pattern::before{
-    background:url("/bihar.jpg") center/cover no-repeat;
-}
-
-/* Assam */
-.swatch--muga .state-card__pattern::before{
-    background:url("/assam.jpg") center/cover no-repeat;
-}
-
-/* Kerala */
-.swatch--coir .state-card__pattern::before{
-    background:url("/kerala.jpg") center/cover no-repeat;
-}
-
-/* Jammu & Kashmir */
-.swatch--pashmina .state-card__pattern::before{
-    background:url("/kashmir.jpg") center/cover no-repeat;
-}
-
-/* Punjab */
-.swatch--phulkari .state-card__pattern::before{
-    background:url("/punjab.jpg") center/cover no-repeat;
-}
-
-/* Himachal Pradesh */
-.swatch--kullu .state-card__pattern::before{
-    background:url("/himachal.jpg") center/cover no-repeat;
-}
-
-/* FIXED SECTION: Stays pinned on top of the background image safely */
 .state-card__label {
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 14px 16px;
@@ -211,46 +200,6 @@
 }
 .state-card__name { font-family: var(--display); font-weight: 800; font-size: 1.05rem; }
 .state-card__craft { font-size: .72rem; opacity: .85; }
-
-.state-card__detail {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 12px);
-  transform: translate(-50%, 8px);
-  width: 260px;
-  background: var(--ink, #1f2a44);
-  color: #fff;
-  border-radius: var(--r-lg);
-  padding: 16px 18px;
-  font-size: .8rem;
-  line-height: 1.5;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
-  box-shadow: 0 20px 40px rgba(0,0,0,.25);
-  z-index: 10;
-}
-.state-card__detail::after {
-  content: "";
-  position: absolute;
-  top: 100%; left: 50%;
-  transform: translateX(-50%);
-  border: 7px solid transparent;
-  border-top-color: var(--ink, #1f2a44);
-}
-.state-card.is-active .state-card__detail {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, 0);
-}
-.state-card__detail p { margin: 0 0 10px; }
-.state-card__link {
-  color: #f4ede0;
-  font-size: .74rem;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,.4);
-}
-.state-card__link:hover { border-color: #fff; }
 
 .lp__trust { padding: 70px 24px 20px; }
 .lp__trust h2 { margin-top: 10px; }
@@ -304,14 +253,12 @@
 .lp__links a:hover { color: var(--ink); }
 
 @media (max-width: 980px) {
-  .lp__hero { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; }
-  .lp__loom { height: 320px; }
+  .lp__hero .lp__copy { margin-left: 0; padding: 0 24px; }
   .lp__map--full { height: 360px; padding-left: 12px; padding-right: 12px; }
   .lp__factrow { grid-template-columns: 1fr 1fr; }
   .tiers { grid-template-columns: 1fr; }
   .artcard { grid-template-columns: 1fr; gap: 26px; padding: 26px; }
   .state-card { flex-basis: 180px; height: 220px; }
-  .state-card__detail { width: 210px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -339,7 +286,6 @@
 }
 .state-card:hover .state-card__login-hint { opacity: 1; }
 
-/* AI Guide badge — shown on state cards when user is logged in */
 .state-card__ai-hint {
   position: absolute;
   top: 10px;
@@ -363,16 +309,11 @@
   opacity: 1;
   transform: translateY(0);
 }
-/* Subtle glow on unlocked cards to signal interactivity */
 .state-card.is-unlocked:hover {
   box-shadow: 0 18px 40px rgba(192, 73, 46, 0.28), 0 0 0 2px rgba(192, 73, 46, 0.3);
 }
 
-/* Unlocked badge above state carousel */
-.lp__states-unlocked {
-  margin: 16px auto 0;
-  text-align: center;
-}
+.lp__states-unlocked { margin: 16px auto 0; text-align: center; }
 .lp__unlock-badge {
   display: inline-flex;
   align-items: center;
@@ -391,13 +332,11 @@
   50%       { box-shadow: 0 0 0 8px rgba(192, 73, 46, 0); }
 }
 
-/* Welcome fine text for logged-in users */
 .lp__fine--welcome {
   color: var(--accent, #c0492e) !important;
   font-weight: 500 !important;
   font-size: 0.8rem !important;
 }
-
 
 /* ── Login prompt modal ───────────────────────────────────────────── */
 .lpm__overlay {
@@ -447,10 +386,7 @@
 }
 .lpm__close:hover { background: var(--line, #e0e0e0); }
 
-.lpm__icon {
-  font-size: 2.6rem;
-  margin-bottom: 14px;
-}
+.lpm__icon { font-size: 2.6rem; margin-bottom: 14px; }
 .lpm__box h3 {
   font-family: var(--display, serif);
   font-size: 1.3rem;
@@ -464,17 +400,8 @@
   line-height: 1.6;
   margin: 0 0 22px;
 }
-.lpm__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.lpm__wide {
-  width: 100%;
-  text-decoration: none;
-  display: block;
-  text-align: center;
-}
+.lpm__actions { display: flex; flex-direction: column; gap: 10px; }
+.lpm__wide { width: 100%; text-decoration: none; display: block; text-align: center; }
 .lpm__fine {
   margin: 14px 0 0 !important;
   font-size: 0.7rem !important;

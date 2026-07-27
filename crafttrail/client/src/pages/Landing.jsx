@@ -27,53 +27,6 @@ const STATES = [
   { key: 'hp',        name: 'Himachal Pradesh',  craft: 'Kullu shawls & Chamba Rumal',           swatch: 'kullu' },
 ];
 
-function HandloomIllustration() {
-  return (
-    <svg viewBox="0 0 400 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of a handloom weaving a saree">
-      <defs>
-        <linearGradient id="fabricGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c0492e" />
-          <stop offset="100%" stopColor="#a83c24" />
-        </linearGradient>
-      </defs>
-
-      <rect x="30" y="40" width="340" height="18" rx="4" fill="#1f2a44" />
-      <rect x="30" y="300" width="340" height="18" rx="4" fill="#1f2a44" />
-      <rect x="30" y="40" width="18" height="278" rx="4" fill="#1f2a44" />
-      <rect x="352" y="40" width="18" height="278" rx="4" fill="#1f2a44" />
-
-      <rect x="55" y="52" width="290" height="10" rx="5" fill="#3a4568" />
-      <rect x="55" y="298" width="290" height="10" rx="5" fill="#3a4568" />
-
-      {Array.from({ length: 27 }).map((_, i) => (
-        <line key={i} x1={58 + i * 11} y1={62} x2={58 + i * 11} y2={298} stroke="#e4dcc8" strokeWidth="1.4" />
-      ))}
-
-      <rect x="55" y="230" width="290" height="68" fill="url(#fabricGrad)" />
-      <rect x="55" y="210" width="290" height="14" fill="#1f2a44" />
-      <rect x="55" y="196" width="290" height="10" fill="#c8a24a" />
-      <rect x="55" y="180" width="290" height="12" fill="#c0492e" opacity="0.85" />
-
-      {Array.from({ length: 13 }).map((_, i) => (
-        <path key={i} d={`M ${70 + i * 22} 296 l 8 -12 l 8 12 z`} fill="#c8a24a" />
-      ))}
-
-      <rect x="48" y="150" width="304" height="8" rx="3" fill="#3a4568" />
-
-      <ellipse cx="200" cy="154" rx="26" ry="7" fill="#8a3320" transform="rotate(-6 200 154)" />
-      <ellipse cx="200" cy="154" rx="18" ry="3.5" fill="#c8a24a" transform="rotate(-6 200 154)" />
-
-      <circle cx="20" cy="330" r="16" fill="#c0492e" />
-      <circle cx="20" cy="330" r="16" fill="none" stroke="#1f2a44" strokeWidth="2" />
-      <path d="M 20 330 Q 40 310 60 320" stroke="#c8a24a" strokeWidth="2" fill="none" />
-
-      <circle cx="380" cy="330" r="16" fill="#c8a24a" />
-      <circle cx="380" cy="330" r="16" fill="none" stroke="#1f2a44" strokeWidth="2" />
-      <path d="M 380 330 Q 360 310 340 320" stroke="#c0492e" strokeWidth="2" fill="none" />
-    </svg>
-  );
-}
-
 /** Login-gated state card carousel */
 function ShopByState({ user, onStateClick }) {
   const loop = [...STATES, ...STATES];
@@ -112,18 +65,13 @@ function ShopByState({ user, onStateClick }) {
                   <span className="state-card__craft">{s.craft}</span>
                 </div>
                 {user ? (
-                  <div className="state-card__ai-hint" aria-hidden="true">
-                    🤖 AI Guide
-                  </div>
+                  <div className="state-card__ai-hint" aria-hidden="true">🤖 AI Guide</div>
                 ) : (
-                  <div className="state-card__login-hint" aria-hidden="true">
-                    🔒 Sign in to explore
-                  </div>
+                  <div className="state-card__login-hint" aria-hidden="true">🔒 Sign in to explore</div>
                 )}
               </article>
             );
           })}
-
         </div>
       </div>
     </section>
@@ -195,9 +143,8 @@ export default function Landing() {
   const [crafts, setCrafts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
 
-  // State modal state
-  const [loginPrompt, setLoginPrompt] = useState(null);   // { key, name } while showing login gate
-  const [activeState, setActiveState]  = useState(null);  // key while showing detail modal
+  const [loginPrompt, setLoginPrompt] = useState(null);
+  const [activeState, setActiveState] = useState(null);
 
   useEffect(() => {
     api.discover({ lat: city.lat, lng: city.lng, radiusKm: 150 })
@@ -206,16 +153,14 @@ export default function Landing() {
     api.crafts().then((d) => setCrafts(d.crafts)).catch(() => {});
   }, [city]);
 
-  // Request real GPS location for the landing map
   useEffect(() => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {}  // silently ignore denied — the map works without it
+      () => {}
     );
   }, []);
 
-  // After login, reopen the pending state if saved
   useEffect(() => {
     if (!user) return;
     const pending = sessionStorage.getItem('crafttrail_pending_state');
@@ -227,10 +172,8 @@ export default function Landing() {
 
   const handleStateClick = useCallback((stateKey) => {
     if (user) {
-      // Logged in — open detail modal immediately
       setActiveState(stateKey);
     } else {
-      // Not logged in — show login prompt
       const s = STATES.find(s => s.key === stateKey);
       setLoginPrompt({ key: stateKey, name: s?.name || stateKey });
     }
@@ -238,7 +181,6 @@ export default function Landing() {
 
   const handleLoginContinue = useCallback(() => {
     if (!loginPrompt) return;
-    // Save the state key so we can reopen after login
     sessionStorage.setItem('crafttrail_pending_state', loginPrompt.key);
     navigate('/signin', { state: { from: '/' } });
     setLoginPrompt(null);
@@ -248,7 +190,9 @@ export default function Landing() {
 
   return (
     <div className="lp">
-      <section className="lp__hero shell">
+
+      {/* ── SLIDE 1 — Hero: full-bleed photo + overlaid text ── */}
+      <section className="lp__hero">
         <div className="lp__copy">
           <span className="eyebrow">India's craft clusters, made findable</span>
           <h1>
@@ -260,17 +204,16 @@ export default function Landing() {
             finds what you can already name. CraftTrail shows you the craft villages around
             you, tells you who is verified, and lets you knock on the door.
           </p>
-
           <div className="lp__cta">
             {user ? (
               <>
                 <Link className="btn btn-primary" to="/home">Explore craft clusters</Link>
-                <Link className="btn" to="/discover">Discover map</Link>
+                <Link className="btn lp__btn-ghost" to="/discover">Discover map</Link>
               </>
             ) : (
               <>
                 <Link className="btn btn-primary" to="/signup">Create an account</Link>
-                <Link className="btn" to="/discover">Look around first</Link>
+                <Link className="btn lp__btn-ghost" to="/discover">Look around first</Link>
               </>
             )}
           </div>
@@ -280,19 +223,14 @@ export default function Landing() {
               who is coming.
             </p>
           )}
-          {user && (
-            <p className="lp__fine lp__fine--welcome">
-              Welcome back! Click any state card below to explore its heritage &amp; chat with the AI guide.
-            </p>
-          )}
         </div>
-
-        <div className="lp__loom card">
-          <HandloomIllustration />
-          <p className="lp__maphint mono">A saree, mid-weave — Bagru handloom cluster</p>
+        <div className="lp__scrollcue">
+          <span>Scroll to explore</span>
+          <span>↓</span>
         </div>
       </section>
 
+      {/* ── Facts strip ── */}
       <section className="lp__facts">
         <div className="shell lp__factrow">
           {FACTS.map((f) => (
@@ -308,6 +246,7 @@ export default function Landing() {
         </p>
       </section>
 
+      {/* ── SLIDE 3 — Map ── */}
       <section className="lp__mapsection">
         <div className="shell lp__mapsectionHead">
           <span className="eyebrow">What's actually near you</span>
@@ -336,8 +275,10 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── SLIDE 2 — Shop by state ── */}
       <ShopByState user={user} onStateClick={handleStateClick} />
 
+      {/* ── SLIDE 4 — Trust + OCR ── */}
       <section className="lp__trust shell">
         <span className="eyebrow">How a badge is earned</span>
         <h2>Trust you can <span className="script">take apart</span>.</h2>
@@ -391,6 +332,7 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── SLIDE 5 — Footer / redirect links ── */}
       <footer className="lp__foot">
         <div className="shell lp__footin">
           <div>
@@ -405,7 +347,6 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ── Login prompt modal ───────────────────────────────────────── */}
       {loginPrompt && (
         <LoginPromptModal
           stateName={loginPrompt.name}
@@ -414,7 +355,6 @@ export default function Landing() {
         />
       )}
 
-      {/* ── State detail modal (shown after login) ───────────────────── */}
       {activeState && (
         <StateDetailModal
           stateKey={activeState}
@@ -422,7 +362,6 @@ export default function Landing() {
         />
       )}
 
-      {/* ── Floating global AI chatbot (RAG) ─────────────────────────── */}
       <FloatingRagBot />
     </div>
   );
