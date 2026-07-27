@@ -27,64 +27,78 @@ const STATES = [
   { key: 'hp',        name: 'Himachal Pradesh',  craft: 'Kullu shawls & Chamba Rumal',           swatch: 'kullu' },
 ];
 
-/** Login-gated state card carousel */
 function ShopByState({ user, onStateClick }) {
   const loop = [...STATES, ...STATES];
-
   return (
     <section className="lp__states">
       <div className="shell lp__statesHead">
         <span className="eyebrow">Shop by state</span>
-        <h2>Every region weaves differently.</h2>
+        <h2>Every region weaves a different story.</h2>
+        <p className="lp__states-motiv">
+          From the indigo block-prints of Rajasthan to the gold-threaded silks of Tamil Nadu,
+          each Indian state carries craft traditions passed down for centuries. Hover to feel
+          the colour of each region — tap one to step inside its heritage.
+        </p>
         {user ? (
           <div className="lp__states-unlocked">
             <span className="lp__unlock-badge">✅ Logged in — Click any state to explore heritage + AI chatbot</span>
           </div>
         ) : (
-          <p className="lp__lede">Click a state to explore its heritage details.</p>
+          <p className="lp__lede">🔒 Sign in to open any state's full heritage guide and AI chatbot.</p>
         )}
       </div>
 
       <div className="states-viewport">
         <div className="states-track">
-          {loop.map((s, i) => {
-            const cardUniqueId = `${s.key}-${i}`;
-            return (
-              <article
-                className={`state-card swatch--${s.swatch} ${user ? 'is-unlocked' : ''}`}
-                key={cardUniqueId}
-                onClick={() => onStateClick(s.key)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && onStateClick(s.key)}
-                aria-label={`Explore ${s.name} heritage`}
-              >
-                <div className="state-card__pattern" aria-hidden="true" />
-                <div className="state-card__label">
-                  <span className="state-card__name">{s.name}</span>
-                  <span className="state-card__craft">{s.craft}</span>
-                </div>
-                {user ? (
-                  <div className="state-card__ai-hint" aria-hidden="true">🤖 AI Guide</div>
-                ) : (
-                  <div className="state-card__login-hint" aria-hidden="true">🔒 Sign in to explore</div>
-                )}
-              </article>
-            );
-          })}
+          {loop.map((s, i) => (
+            <article
+              className={`state-card swatch--${s.swatch} ${user ? 'is-unlocked' : ''}`}
+              key={`${s.key}-${i}`}
+              onClick={() => onStateClick(s.key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onStateClick(s.key)}
+              aria-label={`Explore ${s.name} heritage`}
+            >
+              <div className="state-card__pattern" aria-hidden="true" />
+              <div className="state-card__label">
+                <span className="state-card__name">{s.name}</span>
+                <span className="state-card__craft">{s.craft}</span>
+              </div>
+              {user ? (
+                <div className="state-card__ai-hint" aria-hidden="true">🤖 AI Guide</div>
+              ) : (
+                <div className="state-card__login-hint" aria-hidden="true">🔒 Sign in to explore</div>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="shell lp__statesfoot">
+        <div className="lp__statesfoot-item">
+          <strong>16</strong>
+          <span>craft-rich states, each with its own signature tradition</span>
+        </div>
+        <div className="lp__statesfoot-item">
+          <strong>28+</strong>
+          <span>documented craft clusters mapped and verified</span>
+        </div>
+        <div className="lp__statesfoot-item">
+          <strong>100s</strong>
+          <span>of years of unbroken heritage in a single village</span>
         </div>
       </div>
     </section>
   );
 }
 
-/** Floating RAG chat button for the landing page */
 function FloatingRagBot() {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 800, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
       {open && (
-        <div style={{ width: 360, height: 520, borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.28)', animation: 'cbot-panel-in 0.25s cubic-bezier(0.22,1,0.36,1)' }}>
+        <div style={{ width: 360, height: 520, borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.28)' }}>
           <RagChatbot />
         </div>
       )}
@@ -99,7 +113,6 @@ function FloatingRagBot() {
             fontSize: open ? '1.4rem' : '1.6rem',
             boxShadow: '0 4px 20px rgba(192,73,46,0.45)',
             display: 'grid', placeItems: 'center',
-            transition: 'transform 0.2s, background 0.2s',
           }}
         >
           {open ? '×' : '🤖'}
@@ -112,7 +125,6 @@ function FloatingRagBot() {
   );
 }
 
-/** Login-required modal — shows inline before redirect */
 function LoginPromptModal({ stateName, onClose, onContinue }) {
   return (
     <div className="lpm__overlay" onClick={onClose}>
@@ -142,7 +154,6 @@ export default function Landing() {
   const [clusters, setClusters] = useState([]);
   const [crafts, setCrafts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
-
   const [loginPrompt, setLoginPrompt] = useState(null);
   const [activeState, setActiveState] = useState(null);
 
@@ -191,7 +202,7 @@ export default function Landing() {
   return (
     <div className="lp">
 
-      {/* ── SLIDE 1 — Hero: full-bleed photo + overlaid text ── */}
+      {/* ── SLIDE 1 — Hero ── */}
       <section className="lp__hero">
         <div className="lp__copy">
           <span className="eyebrow">India's craft clusters, made findable</span>
@@ -246,39 +257,65 @@ export default function Landing() {
         </p>
       </section>
 
-      {/* ── SLIDE 3 — Map ── */}
+      {/* ── SLIDE 2 — Shop by state ── */}
+      <ShopByState user={user} onStateClick={handleStateClick} />
+
+      {/* ── SLIDE 3 — Map + artisan info ── */}
       <section className="lp__mapsection">
         <div className="shell lp__mapsectionHead">
           <span className="eyebrow">What's actually near you</span>
           <h2>The map is real, not decoration.</h2>
           <p className="lp__lede">
-            Every pin below is a documented cluster within reach of {city.name}.
-            {userLocation && ' 🔵 Blue dot = your location.'}
+            Every pin is a documented craft cluster within reach of {city.name}.
+            {userLocation && ' 🔵 The blue dot is your live location.'}
           </p>
         </div>
 
-        <div className="lp__map card lp__map--full">
-          <MapView
-            origin={{ lat: city.lat, lng: city.lng }}
-            radiusKm={150}
-            clusters={clusters}
-            activeId={null}
-            onSelect={() => {}}
-            userLocation={userLocation}
-            portraitMobile
-          />
-          <p className="lp__maphint mono">
-            {clusters.length
-              ? `${clusters.length} clusters within 150 km of ${city.name}`
-              : 'Start the API and run npm run seed to populate the map'}
-          </p>
+        <div className="shell lp__mapgrid">
+          <div className="lp__mapinfo">
+            <div className="lp__infocard">
+              <span className="lp__infonum">{clusters.length || '—'}</span>
+              <span className="lp__infolabel">craft clusters within 150 km</span>
+            </div>
+            <div className="lp__infocard">
+              <span className="lp__infonum">🧭</span>
+              <span className="lp__infolabel">Every pin is a real, documented village — not a guess</span>
+            </div>
+            <div className="lp__infocard">
+              <span className="lp__infonum">📍</span>
+              <span className="lp__infolabel">Turn on location to see what's closest to you right now</span>
+            </div>
+          </div>
+
+          <div className="lp__map card">
+            <MapView
+              origin={{ lat: city.lat, lng: city.lng }}
+              radiusKm={150}
+              clusters={clusters}
+              activeId={null}
+              onSelect={() => {}}
+              userLocation={userLocation}
+            />
+          </div>
+
+          <div className="lp__mapinfo">
+            <div className="lp__infocard">
+              <span className="lp__infonum">🤝</span>
+              <span className="lp__infolabel">Each artisan is verified against India's GI registry</span>
+            </div>
+            <div className="lp__infocard">
+              <span className="lp__infonum">💬</span>
+              <span className="lp__infolabel">Book a visit over WhatsApp — the channel they already use</span>
+            </div>
+            <div className="lp__infocard">
+              <span className="lp__infonum">🎨</span>
+              <span className="lp__infolabel">Discover crafts you'd never have known to search for</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── SLIDE 2 — Shop by state ── */}
-      <ShopByState user={user} onStateClick={handleStateClick} />
-
-      {/* ── SLIDE 4 — Trust + OCR ── */}
+      {/* ── SLIDE 4 — Trust + OCR (styled next step) ── */}
       <section className="lp__trust shell">
         <span className="eyebrow">How a badge is earned</span>
         <h2>Trust you can <span className="script">take apart</span>.</h2>
@@ -286,16 +323,13 @@ export default function Landing() {
           Three layers, each with a ceiling the one below cannot break through. Every artisan
           profile shows you the reasoning, not a green tick.
         </p>
-
         <div className="tiers">
           {TIERS.map((t, i) => (
             <article className="tier" key={t.key}>
               <span className="tier__cap mono">{t.ceilingAt}</span>
               <h3>{t.name}</h3>
               <p className="tier__detail">{t.detail}</p>
-              <p className="tier__ceiling mono">
-                {i < 2 ? t.ceiling : 'Real visits only.'}
-              </p>
+              <p className="tier__ceiling mono">{i < 2 ? t.ceiling : 'Real visits only.'}</p>
             </article>
           ))}
         </div>
@@ -332,7 +366,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── SLIDE 5 — Footer / redirect links ── */}
+      {/* ── SLIDE 5 — Footer ── */}
       <footer className="lp__foot">
         <div className="shell lp__footin">
           <div>
@@ -354,14 +388,9 @@ export default function Landing() {
           onContinue={handleLoginContinue}
         />
       )}
-
       {activeState && (
-        <StateDetailModal
-          stateKey={activeState}
-          onClose={() => setActiveState(null)}
-        />
+        <StateDetailModal stateKey={activeState} onClose={() => setActiveState(null)} />
       )}
-
       <FloatingRagBot />
     </div>
   );

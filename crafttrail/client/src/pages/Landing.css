@@ -1,9 +1,7 @@
-/* ── Scroll-snap slide structure ─────────────────────────────── */
-.lp {
-  overflow-x: hidden;
-}
+/* ── Base ─────────────────────────────────────────────── */
+.lp { overflow-x: hidden; }
 
-/* ── Slide 1: full-bleed hero photo with overlaid text ──────── */
+/* ── SLIDE 1: full-bleed hero photo ───────────────────── */
 .lp__hero {
   min-height: 100vh;
   display: flex;
@@ -17,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/hero.jpg') center/cover no-repeat;
+  background: url('/rajasthan.jpg') center/cover no-repeat;
   z-index: 0;
 }
 .lp__hero::after {
@@ -42,7 +40,6 @@
 
 .lp__cta { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
 .lp__cta .btn { text-decoration: none; }
-/* ghost button reads on the dark photo */
 .lp__btn-ghost {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.5);
@@ -51,7 +48,6 @@
 .lp__btn-ghost:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
 .lp__fine { margin: 14px 0 0; font-size: .76rem; max-width: 44ch; }
 
-/* scroll cue at the bottom of the hero */
 .lp__scrollcue {
   position: absolute;
   bottom: 30px;
@@ -71,16 +67,7 @@
 }
 @keyframes cue-bounce { 0%,100%{transform:translate(-50%,0)} 50%{transform:translate(-50%,6px)} }
 
-.lp__copy h1 .script { font-size: 1.05em; }
-.lp__sub { color: var(--ink-mid); }
-
-.lp__map { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
-.lp__map .map { flex: 1; border-radius: 0; }
-.lp__maphint {
-  margin: 0; padding: 10px 14px; font-size: .68rem;
-  color: var(--ink-dim); border-top: 1px solid var(--line); background: var(--surface);
-}
-
+/* ── Facts strip ──────────────────────────────────────── */
 .lp__facts { background: var(--sunk); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 44px 0 38px; }
 .lp__factrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
 .fact { display: flex; flex-direction: column; gap: 5px; }
@@ -92,27 +79,26 @@
 .fact__l { font-size: .78rem; color: var(--ink-mid); line-height: 1.4; }
 .lp__factnote { margin: 30px auto 0; font-size: .82rem; color: var(--ink-dim); max-width: 62ch; }
 
-/* Map section — now full width */
-.lp__mapsection { padding: 70px 0; text-align: center; }
-.lp__mapsectionHead h2 { margin-top: 10px; }
-.lp__mapsectionHead .lp__lede { margin: 16px auto 0; max-width: 58ch; }
-
-.lp__map--full {
-  width: 360px;
-  max-width: 100%;
-  margin: 36px auto 0;
-  height: 480px;
-  text-align: left;
-  border-radius: var(--r-lg, 16px);
+/* ── SLIDE 2: Shop by state ───────────────────────────── */
+.lp__states {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 0;
   overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.14);
+  background: var(--ground);
 }
-.lp__map--full .map { border-radius: 0; }
-
-/* Shop by state — auto-scrolling carousel */
-.lp__states { padding: 0 0 70px; overflow: hidden; }
 .lp__statesHead { text-align: center; padding-bottom: 8px; }
 .lp__statesHead h2 { margin-top: 10px; }
+.lp__states-motiv {
+  margin: 18px auto 0;
+  max-width: 62ch;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--ink-mid);
+  text-align: center;
+}
 .lp__statesHead .lp__lede { margin: 16px auto 0; max-width: 58ch; }
 
 .states-viewport {
@@ -122,7 +108,6 @@
   mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
 }
-
 .states-track {
   display: flex;
   gap: 20px;
@@ -131,7 +116,6 @@
   padding: 0 24px;
 }
 .states-track:hover { animation-play-state: paused; }
-
 @keyframes states-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -153,10 +137,8 @@
   box-shadow: 0 18px 40px rgba(20, 20, 30, 0.18);
   z-index: 5;
 }
-
 .state-card__pattern {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   border-radius: var(--r-lg);
   overflow: hidden;
   z-index: 1;
@@ -164,14 +146,9 @@
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 .state-card__pattern::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: .9;
+  content: ""; position: absolute; inset: 0;
+  width: 100%; height: 100%; opacity: .9;
 }
-
 .swatch--ikat .state-card__pattern::before{ background:url("/telangana.jpg") center/cover no-repeat; }
 .swatch--kalamkari .state-card__pattern::before{ background:url("/andhra.jpg") center/cover no-repeat; }
 .swatch--blockprint .state-card__pattern::before{ background:url("/rajasthan.jpg") center/cover no-repeat; }
@@ -201,26 +178,112 @@
 .state-card__name { font-family: var(--display); font-weight: 800; font-size: 1.05rem; }
 .state-card__craft { font-size: .72rem; opacity: .85; }
 
+.lp__statesfoot {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 30px;
+  text-align: center;
+}
+.lp__statesfoot-item { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.lp__statesfoot-item strong {
+  font-family: var(--display); font-weight: 900; font-size: 2.4rem;
+  color: var(--accent); line-height: 1;
+}
+.lp__statesfoot-item span { font-size: .82rem; color: var(--ink-mid); max-width: 24ch; line-height: 1.5; }
+
+.lp__states-unlocked { margin: 16px auto 0; text-align: center; }
+.lp__unlock-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, rgba(192, 73, 46, 0.1), rgba(192, 73, 46, 0.05));
+  border: 1px solid rgba(192, 73, 46, 0.3);
+  color: var(--ink-mid, #555);
+  font-size: 0.8rem; font-weight: 500;
+  padding: 8px 18px; border-radius: 99px;
+  animation: unlock-pulse 3s ease-in-out infinite;
+}
+@keyframes unlock-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 73, 46, 0.15); }
+  50%       { box-shadow: 0 0 0 8px rgba(192, 73, 46, 0); }
+}
+.state-card__login-hint {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+  padding: 5px 10px; border-radius: 99px; white-space: nowrap;
+  opacity: 0; transition: opacity 0.2s ease; pointer-events: none; z-index: 3;
+}
+.state-card:hover .state-card__login-hint { opacity: 1; }
+.state-card__ai-hint {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(192, 73, 46, 0.9);
+  color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em;
+  padding: 3px 8px; border-radius: 99px; white-space: nowrap;
+  opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(-4px); pointer-events: none; z-index: 3; backdrop-filter: blur(4px);
+}
+.state-card.is-unlocked:hover .state-card__ai-hint { opacity: 1; transform: translateY(0); }
+.state-card.is-unlocked:hover {
+  box-shadow: 0 18px 40px rgba(192, 73, 46, 0.28), 0 0 0 2px rgba(192, 73, 46, 0.3);
+}
+
+/* ── SLIDE 3: Map + artisan info ──────────────────────── */
+.lp__mapsection {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 0;
+  text-align: center;
+}
+.lp__mapsectionHead h2 { margin-top: 10px; }
+.lp__mapsectionHead .lp__lede { margin: 16px auto 0; max-width: 58ch; }
+
+.lp__mapgrid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  margin-top: 36px;
+}
+.lp__mapinfo { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+.lp__infocard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lp__infonum {
+  font-family: var(--display); font-weight: 900; font-size: 1.6rem;
+  color: var(--accent); line-height: 1;
+}
+.lp__infolabel { font-size: .82rem; color: var(--ink-mid); line-height: 1.5; }
+
+.lp__map {
+  padding: 0; overflow: hidden;
+  height: 520px;
+  border-radius: var(--r-lg, 16px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.14);
+}
+.lp__map .map { width: 100%; height: 100%; border-radius: 0; }
+
+/* ── Trust / crafts / artisans (Slide 4 — styled next) ── */
+.lp__lede { margin: 16px 0 0; max-width: 58ch; color: var(--ink-mid); }
 .lp__trust { padding: 70px 24px 20px; }
 .lp__trust h2 { margin-top: 10px; }
-.lp__lede { margin: 16px 0 0; max-width: 58ch; color: var(--ink-mid); }
-
 .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
 .tier {
   border: 1px solid var(--line); border-radius: var(--r-lg);
   padding: 22px; background: var(--surface); position: relative;
 }
-.tier__cap {
-  font-size: 2.1rem; font-weight: 500; color: var(--accent-2); line-height: 1;
-  display: block; margin-bottom: 12px;
-}
+.tier__cap { font-size: 2.1rem; font-weight: 500; color: var(--accent-2); line-height: 1; display: block; margin-bottom: 12px; }
 .tier:nth-child(2) .tier__cap { color: var(--accent); }
 .tier:nth-child(3) .tier__cap { color: var(--live); }
 .tier__detail { margin: 8px 0 0; font-size: .85rem; color: var(--ink-mid); line-height: 1.55; }
-.tier__ceiling {
-  margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line);
-  font-size: .68rem; color: var(--ink-dim);
-}
+.tier__ceiling { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: .68rem; color: var(--ink-dim); }
 
 .lp__crafts { padding: 70px 24px 0; }
 .lp__crafts h2 { margin-top: 10px; }
@@ -232,18 +295,14 @@
 .chip:hover { border-color: var(--accent); color: var(--ink); }
 
 .lp__artisans { padding: 70px 24px 80px; }
-.artcard {
-  display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; padding: 38px;
-}
+.artcard { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; padding: 38px; }
 .artcard h2 { margin-top: 8px; }
 .artcard__facts { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
 .artcard__facts div { display: flex; flex-direction: column; }
-.artcard__facts strong {
-  font-family: var(--display); font-size: 1.9rem; font-weight: 900;
-  letter-spacing: -.02em; line-height: 1;
-}
+.artcard__facts strong { font-family: var(--display); font-size: 1.9rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; }
 .artcard__facts span { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
 
+/* ── SLIDE 5: Footer ──────────────────────────────────── */
 .lp__foot { border-top: 1px solid var(--line); padding: 30px 0 44px; background: var(--sunk); }
 .lp__footin { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
 .lp__brand { margin: 0; font-family: var(--display); font-weight: 900; font-size: 1.05rem; }
@@ -252,158 +311,48 @@
 .lp__links a { color: var(--ink-dim); text-decoration: none; }
 .lp__links a:hover { color: var(--ink); }
 
-@media (max-width: 980px) {
-  .lp__hero .lp__copy { margin-left: 0; padding: 0 24px; }
-  .lp__map--full { height: 360px; padding-left: 12px; padding-right: 12px; }
-  .lp__factrow { grid-template-columns: 1fr 1fr; }
-  .tiers { grid-template-columns: 1fr; }
-  .artcard { grid-template-columns: 1fr; gap: 26px; padding: 26px; }
-  .state-card { flex-basis: 180px; height: 220px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .states-track { animation: none; }
-}
-
-/* ── State card login hint ────────────────────────────────────────── */
-.state-card__login-hint {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 5px 10px;
-  border-radius: 99px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 3;
-}
-.state-card:hover .state-card__login-hint { opacity: 1; }
-
-.state-card__ai-hint {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(192, 73, 46, 0.9);
-  color: #fff;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 3px 8px;
-  border-radius: 99px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  transform: translateY(-4px);
-  pointer-events: none;
-  z-index: 3;
-  backdrop-filter: blur(4px);
-}
-.state-card.is-unlocked:hover .state-card__ai-hint {
-  opacity: 1;
-  transform: translateY(0);
-}
-.state-card.is-unlocked:hover {
-  box-shadow: 0 18px 40px rgba(192, 73, 46, 0.28), 0 0 0 2px rgba(192, 73, 46, 0.3);
-}
-
-.lp__states-unlocked { margin: 16px auto 0; text-align: center; }
-.lp__unlock-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: linear-gradient(135deg, rgba(192, 73, 46, 0.1), rgba(192, 73, 46, 0.05));
-  border: 1px solid rgba(192, 73, 46, 0.3);
-  color: var(--ink-mid, #555);
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 99px;
-  animation: unlock-pulse 3s ease-in-out infinite;
-}
-@keyframes unlock-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 73, 46, 0.15); }
-  50%       { box-shadow: 0 0 0 8px rgba(192, 73, 46, 0); }
-}
-
-.lp__fine--welcome {
-  color: var(--accent, #c0492e) !important;
-  font-weight: 500 !important;
-  font-size: 0.8rem !important;
-}
-
-/* ── Login prompt modal ───────────────────────────────────────────── */
+/* ── Login modal ──────────────────────────────────────── */
 .lpm__overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  background: rgba(10, 10, 20, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: lpm-fade 0.2s ease;
+  position: fixed; inset: 0; z-index: 1100;
+  background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: lpm-fade 0.2s ease;
 }
 @keyframes lpm-fade { from { opacity: 0; } }
-
 .lpm__box {
-  position: relative;
-  background: var(--surface, #fff);
-  border-radius: 20px;
-  padding: 36px 32px 30px;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
+  position: relative; background: var(--surface, #fff);
+  border-radius: 20px; padding: 36px 32px 30px;
+  max-width: 400px; width: 100%; text-align: center;
   box-shadow: 0 24px 60px rgba(0,0,0,0.3);
   animation: lpm-slide 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes lpm-slide {
-  from { opacity: 0; transform: scale(0.93) translateY(16px); }
-}
-
+@keyframes lpm-slide { from { opacity: 0; transform: scale(0.93) translateY(16px); } }
 .lpm__close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  background: var(--ground, #f8f6f2);
-  border: 1px solid var(--line, #e0e0e0);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  color: var(--ink-dim, #888);
+  position: absolute; top: 12px; right: 14px;
+  background: var(--ground, #f8f6f2); border: 1px solid var(--line, #e0e0e0);
+  border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem;
+  cursor: pointer; display: grid; place-items: center; color: var(--ink-dim, #888);
   transition: background 0.15s;
 }
 .lpm__close:hover { background: var(--line, #e0e0e0); }
-
 .lpm__icon { font-size: 2.6rem; margin-bottom: 14px; }
-.lpm__box h3 {
-  font-family: var(--display, serif);
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin: 0 0 10px;
-  line-height: 1.3;
-}
-.lpm__box p {
-  font-size: 0.84rem;
-  color: var(--ink-mid, #555);
-  line-height: 1.6;
-  margin: 0 0 22px;
-}
+.lpm__box h3 { font-family: var(--display, serif); font-size: 1.3rem; font-weight: 800; margin: 0 0 10px; line-height: 1.3; }
+.lpm__box p { font-size: 0.84rem; color: var(--ink-mid, #555); line-height: 1.6; margin: 0 0 22px; }
 .lpm__actions { display: flex; flex-direction: column; gap: 10px; }
 .lpm__wide { width: 100%; text-decoration: none; display: block; text-align: center; }
-.lpm__fine {
-  margin: 14px 0 0 !important;
-  font-size: 0.7rem !important;
-  color: var(--ink-dim, #aaa) !important;
+.lpm__fine { margin: 14px 0 0 !important; font-size: 0.7rem !important; color: var(--ink-dim, #aaa) !important; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 980px) {
+  .lp__hero .lp__copy { margin-left: 0; padding: 0 24px; }
+  .lp__factrow { grid-template-columns: 1fr 1fr; }
+  .lp__mapgrid { grid-template-columns: 1fr; }
+  .lp__map { height: 360px; order: -1; }
+  .tiers { grid-template-columns: 1fr; }
+  .artcard { grid-template-columns: 1fr; gap: 26px; padding: 26px; }
+  .state-card { flex-basis: 180px; height: 220px; }
+  .lp__statesfoot { grid-template-columns: 1fr; gap: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .states-track { animation: none; }
 }
