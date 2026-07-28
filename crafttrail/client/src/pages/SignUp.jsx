@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.jsx';
 import './Auth.css';
-
+import AuthDecor from '../components/AuthDecor.jsx';
 /**
  * Name, email, password. Nothing else.
  *
@@ -37,6 +37,7 @@ export default function SignUp() {
 
   return (
     <div className="au">
+      <AuthDecor />
       <div className="au__box">
         <header className="au__head">
           <h1>Join CraftTrail</h1>

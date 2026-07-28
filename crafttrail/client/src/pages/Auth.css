@@ -30,3 +30,5 @@
   height: 1px;
   background: var(--line);
 }
+.au { position: relative; overflow: hidden; }
+.au__box { position: relative; z-index: 1; }

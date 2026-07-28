@@ -1,0 +1,34 @@
+.authdecor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  color: var(--accent);
+}
+.authdecor__item {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  opacity: 0.16;
+  animation: ad-float 9s ease-in-out infinite;
+}
+.ad--1 { top: 12%;  left: 8%;  animation-delay: 0s;    width: 110px; height: 110px; }
+.ad--2 { top: 20%;  right: 9%; animation-delay: -2s;   width: 95px;  height: 95px; }
+.ad--3 { bottom: 14%; left: 11%; animation-delay: -4s; width: 88px;  height: 88px; }
+.ad--4 { bottom: 20%; right: 8%; animation-delay: -1s; width: 105px; height: 105px; }
+.ad--5 { top: 45%;  left: 4%;   animation-delay: -3s;  width: 80px;  height: 80px; opacity: 0.12; }
+.ad--6 { top: 48%;  right: 5%;  animation-delay: -5s;  width: 84px;  height: 84px; opacity: 0.13; }
+
+@keyframes ad-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-14px) rotate(6deg); }
+}
+
+@media (max-width: 720px) {
+  /* fewer, so they don't crowd a small screen */
+  .ad--2, .ad--5, .ad--6 { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .authdecor__item { animation: none; }
+}
