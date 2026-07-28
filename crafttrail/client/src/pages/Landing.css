@@ -15,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/rajasthan.jpg') center/cover no-repeat;
+  background: url('/hero.jpg') center/cover no-repeat;
   z-index: 0;
 }
 .lp__hero::after {
@@ -247,21 +247,40 @@
   align-items: stretch;
   margin-top: 36px;
 }
-.lp__mapinfo { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+.lp__mapinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+}
 .lp__infocard {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 18px;
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 18px 20px;
   text-align: left;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.lp__infocard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.1);
 }
 .lp__infonum {
-  font-family: var(--display); font-weight: 900; font-size: 1.6rem;
-  color: var(--accent); line-height: 1;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1;
 }
-.lp__infolabel { font-size: .82rem; color: var(--ink-mid); line-height: 1.5; }
-
+.lp__infolabel {
+  font-size: .84rem;
+  color: var(--ink-mid);
+  line-height: 1.55;
+}
 .lp__map {
   padding: 0; overflow: hidden;
   height: 520px;
@@ -270,46 +289,148 @@
 }
 .lp__map .map { width: 100%; height: 100%; border-radius: 0; }
 
-/* ── Trust / crafts / artisans (Slide 4 — styled next) ── */
-.lp__lede { margin: 16px 0 0; max-width: 58ch; color: var(--ink-mid); }
-.lp__trust { padding: 70px 24px 20px; }
-.lp__trust h2 { margin-top: 10px; }
-.tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
-.tier {
-  border: 1px solid var(--line); border-radius: var(--r-lg);
-  padding: 22px; background: var(--surface); position: relative;
+/* ── SLIDE 4: trust + artisan onboarding ──────────────── */
+.lp__slide4 {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 70px 0;
+  background: var(--ground);
 }
-.tier__cap { font-size: 2.1rem; font-weight: 500; color: var(--accent-2); line-height: 1; display: block; margin-bottom: 12px; }
-.tier:nth-child(2) .tier__cap { color: var(--accent); }
-.tier:nth-child(3) .tier__cap { color: var(--live); }
-.tier__detail { margin: 8px 0 0; font-size: .85rem; color: var(--ink-mid); line-height: 1.55; }
-.tier__ceiling { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: .68rem; color: var(--ink-dim); }
+.lp__s4head { text-align: center; }
+.lp__s4head h2 { margin-top: 10px; }
+.lp__s4head .lp__lede { margin: 16px auto 0; max-width: 64ch; text-align: center; }
 
-.lp__crafts { padding: 70px 24px 0; }
-.lp__crafts h2 { margin-top: 10px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
-.chip {
-  border: 1px solid var(--line); border-radius: 99px; padding: 7px 15px;
-  font-size: .82rem; color: var(--ink-mid); text-decoration: none; background: var(--surface);
+.lp__slide4 .tiers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 40px;
 }
-.chip:hover { border-color: var(--accent); color: var(--ink); }
+.lp__slide4 .tier h3 {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  margin: 4px 0 0;
+}
+.lp__slide4 .tier__detail {
+  line-height: 1.6;
+}
 
-.lp__artisans { padding: 70px 24px 80px; }
-.artcard { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; padding: 38px; }
-.artcard h2 { margin-top: 8px; }
-.artcard__facts { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
-.artcard__facts div { display: flex; flex-direction: column; }
-.artcard__facts strong { font-family: var(--display); font-size: 1.9rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; }
-.artcard__facts span { font-size: .78rem; color: var(--ink-dim); margin-top: 4px; }
+.lp__s4artisan {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 48px;
+  padding: 34px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg, 16px);
+}
+.lp__s4artisan-h { margin-top: 8px; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+.lp__s4artisan-text .lp__lede { text-align: left; margin-top: 12px; }
+.lp__s4stats { display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+.lp__s4stat { display: flex; flex-direction: column; }
+.lp__s4stat strong {
+  font-family: var(--display); font-size: 2rem; font-weight: 900;
+  letter-spacing: -.02em; line-height: 1; color: var(--accent);
+}
+.lp__s4stat span { font-size: .8rem; color: var(--ink-dim); margin-top: 4px; }
 
-/* ── SLIDE 5: Footer ──────────────────────────────────── */
-.lp__foot { border-top: 1px solid var(--line); padding: 30px 0 44px; background: var(--sunk); }
-.lp__footin { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.lp__s4crafts { text-align: center; margin-top: 40px; }
+.lp__s4crafts .chips { justify-content: center; margin-top: 18px; }
+
+/* ── SLIDE 5: closing CTA + footer ────────────────────── */
+.lp__cta-slide {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 0;
+  background: var(--sunk);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.lp__cta-inner { max-width: 900px; }
+.lp__cta-slide h2 { margin-top: 12px; line-height: 1.2; }
+.lp__cta-slide .lp__lede { margin: 18px auto 0; max-width: 54ch; }
+
+.lp__cta-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 44px;
+}
+.lp__cta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.lp__cta-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+  border-color: var(--accent);
+}
+.lp__cta-icon { font-size: 1.8rem; }
+.lp__cta-card strong { font-family: var(--display); font-size: 1.1rem; margin-top: 4px; }
+.lp__cta-card span { font-size: .8rem; color: var(--ink-dim); }
+.lp__cta-card--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent, #fff);
+}
+.lp__cta-card--accent span { color: rgba(255,255,255,0.85); }
+
+.lp__cta-foot {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+}
+.lp__foot-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  text-align: left;
+  margin-bottom: 30px;
+}
+.lp__foot-nav { display: flex; gap: 48px; flex-wrap: wrap; }
+.lp__foot-col { display: flex; flex-direction: column; gap: 8px; }
+.lp__foot-h {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  margin-bottom: 4px;
+}
+.lp__foot-col a { font-size: .84rem; color: var(--ink-mid); text-decoration: none; }
+.lp__foot-col a:hover { color: var(--accent); }
 .lp__brand { margin: 0; font-family: var(--display); font-weight: 900; font-size: 1.05rem; }
 .lp__tagline { margin: 2px 0 0; font-size: .76rem; color: var(--ink-dim); }
 .lp__links { display: flex; gap: 18px; font-size: .82rem; }
 .lp__links a { color: var(--ink-dim); text-decoration: none; }
 .lp__links a:hover { color: var(--ink); }
+
+.lp__foot-bottom {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: .74rem;
+  color: var(--ink-dim);
+}
+.lp__foot-legal { text-align: right; }
 
 /* ── Login modal ──────────────────────────────────────── */
 .lpm__overlay {
@@ -348,10 +469,18 @@
   .lp__factrow { grid-template-columns: 1fr 1fr; }
   .lp__mapgrid { grid-template-columns: 1fr; }
   .lp__map { height: 360px; order: -1; }
-  .tiers { grid-template-columns: 1fr; }
-  .artcard { grid-template-columns: 1fr; gap: 26px; padding: 26px; }
+  .lp__slide4 .tiers { grid-template-columns: 1fr; }
+  .lp__s4artisan { grid-template-columns: 1fr; gap: 26px; padding: 26px; }
   .state-card { flex-basis: 180px; height: 220px; }
   .lp__statesfoot { grid-template-columns: 1fr; gap: 20px; }
+}
+@media (max-width: 780px) {
+  .lp__cta-links { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .lp__foot-top { flex-direction: column; gap: 24px; }
+  .lp__foot-bottom { flex-direction: column; }
+  .lp__foot-legal { text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
   .states-track { animation: none; }

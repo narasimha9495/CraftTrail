@@ -314,71 +314,106 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* ── SLIDE 4 — Trust + OCR (styled next step) ── */}
-      <section className="lp__trust shell">
-        <span className="eyebrow">How a badge is earned</span>
-        <h2>Trust you can <span className="script">take apart</span>.</h2>
-        <p className="lp__lede">
-          Three layers, each with a ceiling the one below cannot break through. Every artisan
-          profile shows you the reasoning, not a green tick.
-        </p>
-        <div className="tiers">
-          {TIERS.map((t, i) => (
-            <article className="tier" key={t.key}>
-              <span className="tier__cap mono">{t.ceilingAt}</span>
-              <h3>{t.name}</h3>
-              <p className="tier__detail">{t.detail}</p>
-              <p className="tier__ceiling mono">{i < 2 ? t.ceiling : 'Real visits only.'}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {crafts.length > 0 && (
-        <section className="lp__crafts shell">
-          <span className="eyebrow">Every tradition has a district</span>
-          <h2>Explore by craft</h2>
-          <div className="chips">
-            {crafts.slice(0, 14).map((c) => (
-              <Link key={c} className="chip" to={`/discover?crafts=${encodeURIComponent(c)}`}>{c}</Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="lp__artisans shell">
-        <div className="artcard card">
-          <div>
-            <span className="eyebrow">For cluster offices and NGOs</span>
-            <h2>Artisans never sign up.</h2>
+      {/* ── SLIDE 4 — How trust works + artisan onboarding ── */}
+      <section className="lp__slide4">
+        <div className="shell">
+          <div className="lp__s4head">
+            <span className="eyebrow">How a badge is earned</span>
+            <h2>Trust you can <span className="script">take apart</span>.</h2>
             <p className="lp__lede">
-              A block printer in Bagru is not going to manage a dashboard. Field records collected
-              by NGOs and cluster offices are entered by state tourism staff, and availability
-              arrives over WhatsApp — the channel artisans already use.
+              Document OCR reads the Pehchan / GI / Udyam card, then checks the craft against
+              the district it's registered to. Three layers, each with a ceiling the one below
+              cannot break through — every profile shows you the reasoning, not a green tick.
             </p>
           </div>
-          <div className="artcard__facts">
-            <div><strong>95%</strong><span>of every booking reaches the artisan</span></div>
-            <div><strong>5%</strong><span>sustains the SHG that vouched for them</span></div>
-            <div><strong>0</strong><span>apps an artisan has to install</span></div>
+
+          <div className="tiers">
+            {TIERS.map((t, i) => (
+              <article className="tier" key={t.key}>
+                <span className="tier__cap mono">{t.ceilingAt}</span>
+                <h3>{t.name}</h3>
+                <p className="tier__detail">{t.detail}</p>
+                <p className="tier__ceiling mono">{i < 2 ? t.ceiling : 'Real visits only.'}</p>
+              </article>
+            ))}
           </div>
+
+          <div className="lp__s4artisan">
+            <div className="lp__s4artisan-text">
+              <span className="eyebrow">For cluster offices and NGOs</span>
+              <h3 className="lp__s4artisan-h">Artisans never sign up.</h3>
+              <p className="lp__lede">
+                A block printer in Bagru is not going to manage a dashboard. Field records
+                collected by NGOs and cluster offices are entered by state tourism staff, and
+                availability arrives over WhatsApp — the channel artisans already use.
+              </p>
+            </div>
+            <div className="lp__s4stats">
+              <div className="lp__s4stat">
+                <strong>95%</strong>
+                <span>of every booking reaches the artisan</span>
+              </div>
+              <div className="lp__s4stat">
+                <strong>5%</strong>
+                <span>sustains the SHG that vouched for them</span>
+              </div>
+              <div className="lp__s4stat">
+                <strong>0</strong>
+                <span>apps an artisan has to install</span>
+              </div>
+            </div>
+          </div>
+
+          {crafts.length > 0 && (
+            <div className="lp__s4crafts">
+              <span className="eyebrow">Every tradition has a district — explore by craft</span>
+              <div className="chips">
+                {crafts.slice(0, 14).map((c) => (
+                  <Link key={c} className="chip" to={`/discover?crafts=${encodeURIComponent(c)}`}>{c}</Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
-
       {/* ── SLIDE 5 — Footer ── */}
       <footer className="lp__foot">
-        <div className="shell lp__footin">
-          <div>
-            <p className="lp__brand">CraftTrail</p>
-            <p className="lp__tagline">Built for the Digital India hackathon. Honest about what is real.</p>
+        <section>
+      <div className="lp__cta-foot">
+            <div className="lp__foot-top">
+              <div>
+                <p className="lp__brand">CraftTrail</p>
+                <p className="lp__tagline">Connecting travellers with India's artisans — honestly and directly.</p>
+              </div>
+              <nav className="lp__foot-nav">
+                <div className="lp__foot-col">
+                  <span className="lp__foot-h">Explore</span>
+                  <Link to="/discover">Discover map</Link>
+                  <Link to="/plan">Plan a trip</Link>
+                  {user && <Link to="/journey">My journey</Link>}
+                </div>
+                <div className="lp__foot-col">
+                  <span className="lp__foot-h">Account</span>
+                  {!user && <Link to="/signin">Log in</Link>}
+                  {!user && <Link to="/signup">Create account</Link>}
+                  {user && <Link to="/home">Home</Link>}
+                </div>
+                <div className="lp__foot-col">
+                  <span className="lp__foot-h">About</span>
+                  <a href="#trust">How trust works</a>
+                  <a href="#artisans">For NGOs & clusters</a>
+                </div>
+              </nav>
+            </div>
+            <div className="lp__foot-bottom">
+              <p>© {new Date().getFullYear()} CraftTrail. All rights reserved.</p>
+              <p className="lp__foot-legal">
+                Craft data sourced from public GI, Pehchan and Udyam records ·
+                Made in India 🇮🇳
+              </p>
+            </div>
           </div>
-          <nav className="lp__links">
-            <Link to="/discover">Discover</Link>
-            <Link to="/signin">Log in</Link>
-            <Link to="/signup">Join free</Link>
-          </nav>
-        </div>
+      </section>
       </footer>
 
       {loginPrompt && (
