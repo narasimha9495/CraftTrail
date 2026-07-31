@@ -1,19 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTheme } from '../lib/theme.jsx';
 import './MapView.css';
 
-/* India's bounding box — users cannot pan or zoom outside this */
 const INDIA_BOUNDS = L.latLngBounds(
-  L.latLng(6.4627, 68.1097),   // SW corner
-  L.latLng(35.5133, 97.3953)   // NE corner
+  L.latLng(6.4627, 68.1097),
+  L.latLng(35.5133, 97.3953)
 );
 
-/** Cluster pin: size encodes significance, colour encodes live availability. */
 function clusterIcon({ significance, availableNow, active }) {
-  const size = 18 + significance * 1.6;
+  const size = 18 + (significance || 6) * 1.6;
   const tone = availableNow > 0 ? 'verdigris' : 'haldi';
   return L.divIcon({
     className: 'pin-wrap',
@@ -26,7 +24,6 @@ function clusterIcon({ significance, availableNow, active }) {
   });
 }
 
-/** Individual artisan pin. Smaller, hollow, so clusters still read first. */
 function artisanIcon({ availability, active }) {
   const tone = availability === 'AVAILABLE' ? 'verdigris' : availability === 'UNAVAILABLE' ? 'dim' : 'haldi';
   return L.divIcon({
@@ -45,7 +42,6 @@ const originIcon = () =>
     iconAnchor: [8, 8],
   });
 
-/** Pulsing blue "you are here" pin for real GPS location */
 const userLocationIcon = () =>
   L.divIcon({
     className: 'pin-wrap',
@@ -58,14 +54,34 @@ const userLocationIcon = () =>
     iconAnchor: [11, 11],
   });
 
-function Recenter({ lat, lng, zoom }) {
+function MapController({ fitClusters, points, origin }) {
   const map = useMap();
+
   useEffect(() => {
-  setTimeout(() => map.invalidateSize(), 100);
-}, [map]);
+    const t = setTimeout(() => map.invalidateSize(), 120);
+    return () => clearTimeout(t);
+  }, [map]);
+
+  const pointsKey = points.map((p) => p.join(',')).join('|');
+
   useEffect(() => {
-    map.flyTo([lat, lng], zoom, { duration: 0.8 });
-  }, [lat, lng, zoom, map]);
+    if (fitClusters) {
+      if (!points.length) return;
+      const t = setTimeout(() => {
+        map.invalidateSize();
+        map.fitBounds(L.latLngBounds(points), { padding: [60, 60], maxZoom: 9, animate: true });
+      }, 250);
+      return () => clearTimeout(t);
+    } else {
+      const t = setTimeout(() => {
+        map.invalidateSize();
+        map.flyTo([origin.lat, origin.lng], 5, { duration: 0.8 });
+      }, 120);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line
+  }, [fitClusters, pointsKey, origin.lat, origin.lng, map]);
+
   return null;
 }
 
@@ -77,17 +93,21 @@ export default function MapView({
   onSelect,
   showArtisans = false,
   onArtisan,
-  userLocation = null,         // { lat, lng } — real GPS position
-  portraitMobile = false,      // if true, use portrait mobile dimensions
+  userLocation = null,
+  portraitMobile = false,
+  fitClusters = false,
 }) {
   const { isDark } = useTheme();
-
-  // Basemap follows the theme, so the pins always carry the colour.
   const tiles = isDark
-
-
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-   : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+  const coordsOf = (c) => c.coordinates || c.location?.coordinates || null;
+
+  const points = clusters
+    .map(coordsOf)
+    .filter(Boolean)
+    .map(([lng, lat]) => [lat, lng]);
 
   return (
     <MapContainer
@@ -99,19 +119,23 @@ export default function MapView({
       minZoom={4}
       maxZoom={16}
       maxBounds={INDIA_BOUNDS}
-      maxBoundsViscosity={1.0}
+      maxBoundsViscosity={0.5}
     >
       <TileLayer key={isDark ? 'd' : 'l'} url={tiles} attribution="&copy; OpenStreetMap contributors &copy; CARTO" />
-      <Recenter lat={origin.lat} lng={origin.lng} zoom={5} />
 
-      <Circle
-        center={[origin.lat, origin.lng]}
-        radius={radiusKm * 1000}
-        pathOptions={{ color: 'var(--ink)', weight: 1, opacity: 0.2, fillOpacity: 0.02 }}
-      />
-      <Marker position={[origin.lat, origin.lng]} icon={originIcon()} />
+      <MapController fitClusters={fitClusters} points={points} origin={origin} />
 
-      {/* Real user GPS location — blue pulsing pin */}
+      {!fitClusters && (
+        <>
+          <Circle
+            center={[origin.lat, origin.lng]}
+            radius={radiusKm * 1000}
+            pathOptions={{ color: 'var(--ink)', weight: 1, opacity: 0.2, fillOpacity: 0.02 }}
+          />
+          <Marker position={[origin.lat, origin.lng]} icon={originIcon()} />
+        </>
+      )}
+
       {userLocation && INDIA_BOUNDS.contains([userLocation.lat, userLocation.lng]) && (
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon()}>
           <Popup>
@@ -123,25 +147,31 @@ export default function MapView({
         </Marker>
       )}
 
-      {clusters.map((c) => (
-        <Marker
-          key={c.id}
-          position={[c.coordinates[1], c.coordinates[0]]}
-          icon={clusterIcon({ significance: c.significance, availableNow: c.availableNow, active: activeId === c.id })}
-          eventHandlers={{ click: () => onSelect?.(c.id) }}
-        >
-          <Popup>
-            <strong style={{ fontFamily: 'var(--display)', fontSize: '1rem' }}>{c.name}</strong>
-            <div style={{ fontSize: '.8rem', color: 'var(--ink-mid)', marginTop: 2 }}>
-              {c.craft} · {c.distanceKm} km
-            </div>
-            <div style={{ fontSize: '.75rem', color: 'var(--ink-dim)', marginTop: 6 }}>
-              {c.artisanCount} artisan{c.artisanCount === 1 ? '' : 's'}
-              {c.availableNow > 0 && ` · ${c.availableNow} welcoming visitors`}
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {clusters.map((c) => {
+        const co = coordsOf(c);
+        if (!co) return null;
+        const id = c.id || c._id;
+        return (
+          <Marker
+            key={id}
+            position={[co[1], co[0]]}
+            icon={clusterIcon({ significance: c.significance, availableNow: c.availableNow, active: activeId === id })}
+            eventHandlers={{ click: () => onSelect?.(id) }}
+          >
+            <Popup>
+              <strong style={{ fontFamily: 'var(--display)', fontSize: '1rem' }}>{c.name}</strong>
+              <div style={{ fontSize: '.8rem', color: 'var(--ink-mid)', marginTop: 2 }}>
+                {c.craft}{c.distanceKm != null ? ` · ${c.distanceKm} km` : ''}
+              </div>
+              {c.district && (
+                <div style={{ fontSize: '.75rem', color: 'var(--ink-dim)', marginTop: 6 }}>
+                  {c.district}{c.state ? `, ${c.state}` : ''}
+                </div>
+              )}
+            </Popup>
+          </Marker>
+        );
+      })}
 
       {showArtisans &&
         clusters.flatMap((c) =>

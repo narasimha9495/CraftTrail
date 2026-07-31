@@ -377,45 +377,78 @@ export default function Landing() {
         </div>
       </section>
       {/* ── SLIDE 5 — Footer ── */}
-      <footer className="lp__foot">
-        <section>
-      <div className="lp__cta-foot">
-            <div className="lp__foot-top">
+      {/* ── SLIDE 5 — Closing CTA + footer ── */}
+      <section className="lp__cta-slide">
+        <div className="lp__cta-inner" style={{ maxWidth: 900, margin: '0 auto', width: '100%', padding: '0 24px' }}>
+          <span className="eyebrow">Your journey begins here</span>
+          <h2 style={{ marginTop: 12, lineHeight: 1.25 }}>
+            The village is thirty kilometres away.<br />
+            <span className="script">Go knock on the door.</span>
+          </h2>
+          <p className="lp__lede" style={{ margin: '18px auto 0', maxWidth: '54ch' }}>
+            Browsing is free and needs no account. When you're ready to visit an artisan,
+            a quick sign-in lets them know who's coming.
+          </p>
+
+          <div className="lp__cta-links" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 44 }}>
+            <Link className="lp__cta-card" to="/discover">
+              <span className="lp__cta-icon">🗺️</span>
+              <strong>Explore the map</strong>
+              <span>See craft clusters near you</span>
+            </Link>
+            <Link className="lp__cta-card" to="/plan">
+              <span className="lp__cta-icon">🧭</span>
+              <strong>Plan a trip</strong>
+              <span>Build a route across craft villages</span>
+            </Link>
+            {user ? (
+              <Link className="lp__cta-card" to="/journey">
+                <span className="lp__cta-icon">📖</span>
+                <strong>My journey</strong>
+                <span>Your saved &amp; visited artisans</span>
+              </Link>
+            ) : (
+              <Link className="lp__cta-card lp__cta-card--accent" to="/signup">
+                <span className="lp__cta-icon">✨</span>
+                <strong>Create free account</strong>
+                <span>30 seconds, no spam ever</span>
+              </Link>
+            )}
+          </div>
+
+          <div className="lp__cta-foot" style={{ marginTop: 50, paddingTop: 30, borderTop: '1px solid var(--line)', textAlign: 'left' }}>
+            <div className="lp__foot-top" style={{ display: 'flex', justifyContent: 'space-between', gap: 40, flexWrap: 'wrap', marginBottom: 30 }}>
               <div>
                 <p className="lp__brand">CraftTrail</p>
                 <p className="lp__tagline">Connecting travellers with India's artisans — honestly and directly.</p>
               </div>
-              <nav className="lp__foot-nav">
-                <div className="lp__foot-col">
+              <nav className="lp__foot-nav" style={{ display: 'flex', gap: 48, flexWrap: 'wrap' }}>
+                <div className="lp__foot-col" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span className="lp__foot-h">Explore</span>
                   <Link to="/discover">Discover map</Link>
                   <Link to="/plan">Plan a trip</Link>
                   {user && <Link to="/journey">My journey</Link>}
                 </div>
-                <div className="lp__foot-col">
+                <div className="lp__foot-col" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span className="lp__foot-h">Account</span>
                   {!user && <Link to="/signin">Log in</Link>}
                   {!user && <Link to="/signup">Create account</Link>}
                   {user && <Link to="/home">Home</Link>}
                 </div>
-                <div className="lp__foot-col">
+                <div className="lp__foot-col" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span className="lp__foot-h">About</span>
                   <a href="#trust">How trust works</a>
-                  <a href="#artisans">For NGOs & clusters</a>
+                  <a href="#artisans">For NGOs &amp; clusters</a>
                 </div>
               </nav>
             </div>
-            <div className="lp__foot-bottom">
+            <div className="lp__foot-bottom" style={{ borderTop: '1px solid var(--line)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', fontSize: '.74rem', color: 'var(--ink-dim)' }}>
               <p>© {new Date().getFullYear()} CraftTrail. All rights reserved.</p>
-              <p className="lp__foot-legal">
-                Craft data sourced from public GI, Pehchan and Udyam records ·
-                Made in India 🇮🇳
-              </p>
+              <p className="lp__foot-legal">Built to bring India's craft heritage online · Made in India 🇮🇳</p>
             </div>
           </div>
+        </div>
       </section>
-      </footer>
-
       {loginPrompt && (
         <LoginPromptModal
           stateName={loginPrompt.name}

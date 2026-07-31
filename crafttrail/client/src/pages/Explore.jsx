@@ -11,19 +11,11 @@ import './Explore.css';
 
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-/**
- * One component, two routes.
- *
- *   /discover  personalised={false}  public, browsable, no account
- *   /home      personalised={true}   welcome card, saved interests, geolocation
- *
- * Now fetches BOTH cluster-based artisans (nearby) AND standalone artisans
- * (seeded / vault-created) so all artisans appear in the list and on the map.
- */
 export default function Explore({ personalised = false }) {
   const { user, updatePrefs } = useAuth();
   const [params, setParams] = useSearchParams();
-
+  const [browseState, setBrowseState] = useState('');
+  const [allClusters, setAllClusters] = useState([]);
   const [city, setCity] = useState(CITIES[0]);
   const [locating, setLocating] = useState(personalised);
   const [locNote, setLocNote] = useState(null);
@@ -38,15 +30,20 @@ export default function Explore({ personalised = false }) {
 
   const [allCrafts, setAllCrafts] = useState([]);
   const [states, setStates] = useState([]);
-  const [data, setData] = useState(null);               // cluster-based result
-  const [standaloneArtisans, setStandaloneArtisans] = useState([]); // direct search
+  const [data, setData] = useState(null);
+  const [standaloneArtisans, setStandaloneArtisans] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAllChips, setShowAllChips] = useState(false);
 
   useEffect(() => {
     api.crafts().then((d) => setAllCrafts(d.crafts)).catch(() => {});
     api.states().then((d) => setStates(d.states)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    api('/clusters').then((d) => setAllClusters(d.clusters || d || [])).catch(() => {});
   }, []);
 
   // Location resolution: saved home city → geolocation → Jaipur.
@@ -59,8 +56,6 @@ export default function Explore({ personalised = false }) {
       setLocating(false);
       return () => { dead = true; };
     }
-    if (user?.interests?.length && !interests.length) setInterests(user.interests);
-
     locate().then((pos) => {
       if (dead) return;
       if (pos) {
@@ -77,6 +72,7 @@ export default function Explore({ personalised = false }) {
 
   // Fetch cluster-based artisans (geo query)
   useEffect(() => {
+    if (browseState) return; 
     let dead = false;
     setLoading(true);
     setErr(null);
@@ -88,7 +84,7 @@ export default function Explore({ personalised = false }) {
     return () => { dead = true; };
   }, [city, radiusKm, interests, sort]);
 
-  // Fetch standalone artisans using /discover/search (no cluster required)
+  // Fetch standalone artisans using /discover/search
   useEffect(() => {
     let dead = false;
     const qs = new URLSearchParams({ limit: '40', q: searchQ });
@@ -112,7 +108,6 @@ export default function Explore({ personalised = false }) {
     [interests, user, setParams, updatePrefs]
   );
 
-  // Flatten cluster.artisans into one ranked list for the right column.
   const clusterArtisans = useMemo(() => {
     if (!data) return [];
     const rows = data.clusters.flatMap((c) => (c.artisans || []).map((a) => ({ artisan: a, cluster: c })));
@@ -124,7 +119,6 @@ export default function Explore({ personalised = false }) {
     return rows;
   }, [data, sort]);
 
-  // Standalone artisans — those NOT already shown via a cluster
   const clusterArtisanIds = useMemo(
     () => new Set(clusterArtisans.map(r => String(r.artisan.id))),
     [clusterArtisans]
@@ -139,6 +133,15 @@ export default function Explore({ personalised = false }) {
   const emptyBecauseFilter = empty && interests.length > 0;
   const emptyBecauseNoSeed = empty && interests.length === 0 && radiusKm >= 150;
 
+  // ── State-browse derivations ──
+  const allStates = [...new Set(allClusters.map((c) => c.state).filter(Boolean))].sort();
+  const stateClusters = browseState
+    ? allClusters.filter((c) => c.state === browseState)
+    : null;
+  const shownClusters = stateClusters || data?.clusters || [];
+if (browseState && stateClusters) {
+    console.log('STATE:', browseState, '| count:', stateClusters.length, '| first cluster:', stateClusters[0]);
+  }
   return (
     <div className="ex">
       <header className="ex__head shell">
@@ -166,7 +169,7 @@ export default function Explore({ personalised = false }) {
 
         <div className="ex__controls">
           <label className="ctl">
-            <span className="eyebrow">State</span>
+            <span className="eyebrow">City</span>
             <select
               className="select"
               value={city.name}
@@ -184,7 +187,20 @@ export default function Explore({ personalised = false }) {
             </select>
           </label>
 
-          {/* ── Artisan Search Box ─────────────────────────────────── */}
+          <label className="ctl">
+            <span className="eyebrow">Or browse a whole state</span>
+            <select
+              className="select"
+              value={browseState}
+              onChange={(e) => setBrowseState(e.target.value)}
+            >
+              <option value="">— City search —</option>
+              {allStates.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+
           <label className="ctl">
             <span className="eyebrow">Search Artisan</span>
             <input
@@ -216,8 +232,8 @@ export default function Explore({ personalised = false }) {
         {allCrafts.length > 0 && (
           <div className="ex__interests">
             <span className="eyebrow">Interested in</span>
-            <div className="ex__chips">
-              {allCrafts.map((c) => (
+            <div className={`ex__chips ${showAllChips ? 'is-expanded' : ''}`}>
+              {(showAllChips ? allCrafts : allCrafts.slice(0, 8)).map((c) => (
                 <button
                   key={c}
                   className={`ichip ${interests.includes(c) ? 'is-on' : ''}`}
@@ -233,30 +249,58 @@ export default function Explore({ personalised = false }) {
                 </button>
               )}
             </div>
+            {allCrafts.length > 8 && (
+              <button
+                className="ex__chips-toggle"
+                onClick={() => setShowAllChips((v) => !v)}
+              >
+                {showAllChips ? 'Show fewer' : `+${allCrafts.length - 8} more crafts`}
+              </button>
+            )}
           </div>
         )}
       </header>
 
+      {/* ── State browse: village list popup ── */}
+      {browseState && (
+        <div className="ex__statepanel shell">
+          <div className="ex__statepanel-head">
+            <h3>{browseState} — {stateClusters.length} craft village{stateClusters.length === 1 ? '' : 's'}</h3>
+            <button className="btn btn-sm" onClick={() => setBrowseState('')}>Back to city search</button>
+          </div>
+          <div className="ex__statevillages">
+            {stateClusters.map((c) => (
+              <div key={c._id} className="ex__village" onClick={() => setActiveId(c._id)}>
+                <strong>{c.name}</strong>
+                <span>{c.craft}</span>
+                <span className="mono">{c.district}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="ex__board shell">
         <div className="ex__map card">
-          {data && (
-            <MapView
-              origin={{ lat: city.lat, lng: city.lng }}
-              radiusKm={radiusKm}
-              clusters={data.clusters}
-              standaloneArtisans={extraArtisans}
-              activeId={activeId}
-              onSelect={setActiveId}
-              showArtisans
-              onArtisan={setActiveId}
-            />
-          )}
+<MapView
+            origin={{ lat: city.lat, lng: city.lng }}
+            radiusKm={browseState ? 0 : radiusKm}
+            clusters={shownClusters}
+            standaloneArtisans={browseState ? [] : extraArtisans}
+            activeId={activeId}
+            onSelect={setActiveId}
+            showArtisans={!browseState}
+            onArtisan={setActiveId}
+            fitClusters={!!browseState}
+          />  
         </div>
 
         <aside className="ex__list">
           <div className="ex__count">
-            {loading ? (
+            {loading && !browseState ? (
               <span className="ex__loading"><span className="spinner" /> Ranking by distance and significance…</span>
+            ) : browseState ? (
+              <span><strong>{stateClusters.length}</strong> village{stateClusters.length === 1 ? '' : 's'} across {browseState}</span>
             ) : (
               <span>
                 <strong>{totalArtisans}</strong> artisan{totalArtisans === 1 ? '' : 's'} ·{' '}
@@ -267,20 +311,20 @@ export default function Explore({ personalised = false }) {
             )}
           </div>
 
-          {err && (
+          {err && !browseState && (
             <div className="notice notice-bad">
               Cannot reach the API. Start the server on port 5000, then reload. <br />
               <span className="mono">{err}</span>
             </div>
           )}
 
-          {emptyBecauseNoSeed && (
+          {emptyBecauseNoSeed && !browseState && (
             <div className="notice notice-bad">
               No artisans found. Try widening the radius or searching by name.
             </div>
           )}
 
-          {emptyBecauseFilter && (
+          {emptyBecauseFilter && !browseState && (
             <div className="notice">
               Nothing nearby matches those crafts. Clear the filter, or widen the radius — the real
               clusters are usually 30–60 km outside the city.
@@ -292,8 +336,7 @@ export default function Explore({ personalised = false }) {
             </div>
           )}
 
-          {/* Cluster-linked artisans */}
-          {!loading &&
+          {!loading && !browseState &&
             clusterArtisans.map(({ artisan, cluster }) => (
               <ArtisanCard
                 key={artisan.id}
@@ -304,8 +347,7 @@ export default function Explore({ personalised = false }) {
               />
             ))}
 
-          {/* Standalone artisans (seeded / vault-created, no cluster) */}
-          {extraArtisans.length > 0 && (
+          {!browseState && extraArtisans.length > 0 && (
             <>
               {clusterArtisans.length > 0 && (
                 <div className="ex__divider">
