@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/crafttrail';
+const uri = process.env.MONGO_URI;
 
 /* ── Inline Artisan schema (mirrors models/Artisan.js) ─────────── */
 const artisanSchema = new mongoose.Schema({
