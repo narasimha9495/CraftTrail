@@ -111,4 +111,4 @@
 .ex__village:hover { border-color: var(--accent); transform: translateY(-2px); }
 .ex__village strong { font-size: .9rem; }
 .ex__village span { font-size: .76rem; color: var(--ink-mid); }
-.ex__village .mono { color: var(--ink-dim); font-size: .7rem; }
+.ex__village .mono { color: var(--ink-dim); font-size: .7rem; } 
