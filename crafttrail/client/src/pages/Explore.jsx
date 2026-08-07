@@ -43,7 +43,7 @@ export default function Explore({ personalised = false }) {
   }, []);
 
   useEffect(() => {
-    api('/clusters').then((d) => setAllClusters(d.clusters || d || [])).catch(() => {});
+    fetch(`${BASE}/clusters`).then(r => r.json()).then((d) => setAllClusters(Array.isArray(d) ? d : (d.clusters || []))).catch(() => {});
   }, []);
 
   // Location resolution: saved home city → geolocation → Jaipur.
@@ -139,9 +139,6 @@ export default function Explore({ personalised = false }) {
     ? allClusters.filter((c) => c.state === browseState)
     : null;
   const shownClusters = stateClusters || data?.clusters || [];
-if (browseState && stateClusters) {
-    console.log('STATE:', browseState, '| count:', stateClusters.length, '| first cluster:', stateClusters[0]);
-  }
   return (
     <div className="ex">
       <header className="ex__head shell">
