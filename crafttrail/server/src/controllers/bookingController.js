@@ -13,7 +13,7 @@ import {
   shares,
 } from '../services/paymentService.js';
 import { issueCertificate, verifyCertificate } from '../services/certificateService.js';
-import { computeTrustScore } from '../services/verificationService.js';
+import { computeTrustScore, priceFromTrust } from '../services/verificationService.js';
 import { sendWhatsApp, bookingNotification } from '../services/whatsappService.js';
 
 /**
@@ -34,7 +34,8 @@ export async function requestBooking(req, res, next) {
       return res.status(409).json({ error: 'Artisan is currently not accepting visits' });
     }
 
-    const size = Number(partySize || 1);
+    const size       = Number(partySize || 1);
+    const unitPrice  = priceFromTrust(artisan.trustScore);   // dynamic: ₹1000→₹1200→₹1800→₹2500
     const booking = await Booking.create({
       artisan: artisan._id,
       tourist,
@@ -42,7 +43,7 @@ export async function requestBooking(req, res, next) {
       slot: slot || '',
       partySize: size,
       message: message || '',
-      amountInr: (artisan.workshop?.priceInr || 0) * size,
+      amountInr: unitPrice * size,
       status: 'PENDING',
     });
 
@@ -240,11 +241,17 @@ export async function leaveReview(req, res, next) {
       touristName: booking.tourist.name,
     });
 
-    // recompute tier 3 rollup
-    const all = await Review.find({ artisan: artisan._id });
-    const avg = all.reduce((s, r) => s + r.rating, 0) / all.length;
-    artisan.verification.tier3 = { reviewCount: all.length, avgRating: Number(avg.toFixed(2)) };
-    artisan.trustScore = computeTrustScore(artisan.verification);
+    // Incremental running average — preserves seeded/historical tier3 data
+    // (Review.find() only returns real Review docs, not seeded data, so a
+    //  fresh query would drop reviewCount from e.g. 50 → 1 and tank the score)
+    const oldCount = artisan.verification.tier3.reviewCount || 0;
+    const oldAvg   = artisan.verification.tier3.avgRating   || 0;
+    const newCount = oldCount + 1;
+    const newAvg   = Number(((oldAvg * oldCount + Number(rating)) / newCount).toFixed(2));
+    artisan.verification.tier3.reviewCount = newCount;
+    artisan.verification.tier3.avgRating   = newAvg;
+    artisan.markModified('verification');
+    artisan.trustScore = computeTrustScore(artisan.toObject().verification);
     await artisan.save();
 
     // the coupling that makes a bribed verifier expensive

@@ -96,12 +96,15 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
     fetch(`${RAG_URL}/api/rag/status`)
       .then(r => r.json())
       .then(setRagStatus)
-      .catch(() => setRagStatus({ ready: false, indexed: 0, message: 'AI guide coming soon' }));
+      .catch(() => setRagStatus({ ready: false, indexed: 0, message: 'Starting up…' }));
   }, []);
 
-  // Auto-scroll
+  // Auto-scroll — only after the user has sent at least one message (length > 1)
+  // Avoids scrolling the whole page down to the chatbot on initial load
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 1 || busy) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, busy]);
 
   const send = useCallback(async (question) => {
@@ -132,7 +135,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'bot',
-       text: 'The AI craft guide is coming soon. In the meantime, browse the map to find verified artisans near you — every profile shows their craft, trust score, workshop details and how to book a visit.',
+        text: 'Unable to reach the knowledge base right now. Please try again in a moment.',
         isError: true,
       }]);
     } finally {
@@ -176,14 +179,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
         </div>
       </div>
 
-      {/* ── RAG offline banner ───────────────────────────────────── */}
-      {ragStatus && !ragStatus.ready && (
-        <div className="rc__offline-banner">
-          <strong>AI guide coming soon.</strong>{' '}
-          Open a terminal in <code>crafttrail/rag/</code> and run:{' '}
-          <code>python app.py</code>
-        </div>
-      )}
+      {/* ── RAG offline banner — removed ──────────────────────────── */}
 
       {/* ── Messages ─────────────────────────────────────────────── */}
       <div className="rc__messages">
@@ -248,7 +244,7 @@ export default function RagChatbot({ context = '', stateName = '', artisanName =
       </div>
 
       <div className="rc__footer">
-        Powered by CraftTrail RAG · Groq llama-3.1-70b · ChromaDB
+        Powered by CraftTrail RAG · Local Knowledge Base · ChromaDB
       </div>
     </div>
   );

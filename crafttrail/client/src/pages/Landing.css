@@ -15,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/hero.jpg') center/cover no-repeat;
+  background: url('/hero.jpeg') center top / cover no-repeat;
   z-index: 0;
 }
 .lp__hero::after {
@@ -86,8 +86,28 @@
   flex-direction: column;
   justify-content: center;
   padding: 60px 0;
-  overflow: hidden;
+  overflow-x: clip;   /* clip (not hidden) so overflow-y:visible actually works */
+  overflow-y: visible;
   background: var(--ground);
+  position: relative;
+}
+/* Left/right fade edges — pseudo-elements don't create clipping contexts */
+.lp__states::before,
+.lp__states::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 60px;
+  z-index: 10;
+  pointer-events: none;
+}
+.lp__states::before {
+  left: 0;
+  background: linear-gradient(to right, var(--ground), transparent);
+}
+.lp__states::after {
+  right: 0;
+  background: linear-gradient(to left, var(--ground), transparent);
 }
 .lp__statesHead { text-align: center; padding-bottom: 8px; }
 .lp__statesHead h2 { margin-top: 10px; }
@@ -101,24 +121,49 @@
 }
 .lp__statesHead .lp__lede { margin: 16px auto 0; max-width: 58ch; }
 
+.states-wrapper {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.states-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 30;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  color: var(--ink);
+}
+.states-nav:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.states-nav--prev { left: -22px; }
+.states-nav--next { right: -22px; }
+
 .states-viewport {
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: visible;
-  padding: 40px 0 20px;
-  mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+  padding: 50px 0 24px;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.states-viewport::-webkit-scrollbar {
+  display: none;
 }
 .states-track {
   display: flex;
   gap: 20px;
   width: max-content;
-  animation: states-scroll 38s linear infinite;
   padding: 0 24px;
-}
-.states-track:hover { animation-play-state: paused; }
-@keyframes states-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 .state-card {
@@ -127,23 +172,30 @@
   height: 260px;
   border-radius: var(--r-lg);
   border: 1px solid var(--line);
-  overflow: visible;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform .25s ease, box-shadow .25s ease;
+  /* transition drives the JS onMouseEnter/Leave inline style changes */
+  transition: transform .22s ease, box-shadow .22s ease;
   background: var(--surface);
 }
 .state-card:hover {
-  transform: translateY(-6px) scale(1.04);
-  box-shadow: 0 18px 40px rgba(20, 20, 30, 0.18);
-  z-index: 5;
+  transform: translateY(-10px) scale(1.06);
+  box-shadow: 0 22px 48px rgba(20,20,30,0.25);
+  z-index: 20;
+}
+.state-card.is-unlocked:hover {
+  box-shadow: 0 22px 48px rgba(192,73,46,0.35), 0 0 0 2px rgba(192,73,46,0.35);
+}
+.state-card:hover .state-card__login-hint,
+.state-card:hover .state-card__ai-hint {
+  opacity: 1;
 }
 .state-card__pattern {
   position: absolute; inset: 0;
   border-radius: var(--r-lg);
   overflow: hidden;
   z-index: 1;
-  transform: translateZ(0);
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  pointer-events: none;
 }
 .state-card__pattern::before {
   content: ""; position: absolute; inset: 0;

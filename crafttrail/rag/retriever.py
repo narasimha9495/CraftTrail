@@ -1,45 +1,147 @@
 """
-retriever.py — CraftTrail RAG Query Engine
-==========================================
-Handles: ChromaDB semantic search + Groq LLM generation
+retriever.py — CraftTrail RAG Query Engine (Local / No-API)
+=============================================================
+Handles: ChromaDB semantic search + local extractive answer generation.
+NO external API required — answers come purely from the trained knowledge base.
 """
 
 import os
+import re
+import string
+from collections import Counter
 from dotenv import load_dotenv
 
 load_dotenv()
 
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
-from groq import Groq
 
 CHROMA_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-COLLECTION   = "crafttrail_knowledge"
-MODEL        = "llama-3.3-70b-versatile"   # Active Groq model as of July 2025
+COLLECTION  = "crafttrail_knowledge"
 
-# ── Clients ───────────────────────────────────────────────────────────
-embedding_fn = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+# ── Clients ────────────────────────────────────────────────────────────────
+embedding_fn  = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-groq_client   = Groq(api_key=GROQ_API_KEY)
 
-SYSTEM_PROMPT = """You are CraftBot, the official AI assistant for CraftTrail — India's craft discovery platform.
+# ── Stop-words to ignore when scoring relevance ────────────────────────────
+_STOP = {
+    "a","an","the","is","are","was","were","be","been","being","have","has",
+    "had","do","does","did","will","would","could","should","may","might",
+    "shall","can","need","dare","ought","used","of","in","on","at","to",
+    "for","with","by","from","as","and","or","but","if","so","yet","nor",
+    "not","what","which","who","whom","this","that","these","those","i",
+    "me","my","we","our","you","your","he","she","it","his","her","its",
+    "they","them","their","about","into","through","during","before","after",
+    "above","below","up","down","out","off","over","under","then","once",
+    "there","when","where","how","all","any","both","each","more","most",
+    "other","some","such","no","only","same","than","too","very","just",
+    "tell","know","speak","does","speak","languages","does",
+}
 
-CraftTrail maps 744+ Government of India recognised handicraft clusters and connects travellers with verified artisans.
-You help users learn about:
-- Indian crafts, cultural heritage, and artisan stories
-- GI (Geographical Indication) tags and verification
-- Booking workshops and planning visits to craft villages
-- Specific artisans and their crafts on the CraftTrail platform
 
-RULES:
-1. Answer ONLY from the provided context. If context has the answer, give it confidently and completely.
-2. If the context does not contain the answer, say: "I don't have that specific information. Try asking about a specific state, craft, or artisan on CraftTrail."
-3. Be warm, informative, and enthusiastic about Indian craft traditions.
-4. Keep answers concise but complete — 2-4 paragraphs maximum.
-5. When listing crafts or clusters, use bullet points for readability.
-6. Never make up information that isn't in the context.
-"""
+def _tokenize(text: str) -> list[str]:
+    """Lowercase, strip punctuation, remove stop-words."""
+    tokens = re.findall(r"[a-z]+", text.lower())
+    return [t for t in tokens if t not in _STOP and len(t) > 2]
+
+
+def _score_sentence(sentence: str, query_tokens: list[str]) -> float:
+    """Score a sentence by how many query keywords it contains (weighted by rarity)."""
+    sent_tokens = _tokenize(sentence)
+    if not sent_tokens:
+        return 0.0
+    hits = sum(1 for qt in query_tokens if qt in sent_tokens)
+    # Bonus for exact multi-word phrases
+    sentence_lower = sentence.lower()
+    phrase_bonus = sum(0.5 for qt in query_tokens if len(qt) > 5 and qt in sentence_lower)
+    return (hits + phrase_bonus) / max(len(query_tokens), 1)
+
+
+def _extract_best_sentences(chunks: list[str], query: str, max_sentences: int = 8) -> list[str]:
+    """
+    From all retrieved chunks, pick the most query-relevant sentences.
+    Returns deduplicated, ranked sentences.
+    """
+    query_tokens = _tokenize(query)
+    if not query_tokens:
+        # No useful query tokens — just return first sentences of top chunks
+        results = []
+        for chunk in chunks[:3]:
+            sentences = re.split(r"(?<=[.!?])\s+", chunk.strip())
+            results.extend(sentences[:3])
+        return results[:max_sentences]
+
+    scored = []
+    seen = set()
+
+    for chunk in chunks:
+        # Split chunk into sentences
+        sentences = re.split(r"(?<=[.!?])\s+", chunk.strip())
+        for sent in sentences:
+            sent = sent.strip()
+            if len(sent) < 30:          # skip very short fragments
+                continue
+            # Deduplicate (first 60 chars as key)
+            key = sent[:60].lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            score = _score_sentence(sent, query_tokens)
+            scored.append((score, sent))
+
+    # Sort descending by score
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    # Return top sentences, but keep reading order within each chunk
+    top = [s for _, s in scored[:max_sentences] if _ > 0]
+    if not top:
+        # Fallback: first sentence of each chunk
+        top = []
+        for chunk in chunks[:3]:
+            sentences = re.split(r"(?<=[.!?])\s+", chunk.strip())
+            if sentences:
+                top.append(sentences[0].strip())
+    return top
+
+
+def _format_answer(question: str, sentences: list[str], chunks: list[str]) -> str:
+    """
+    Build a readable, structured answer from the best extracted sentences.
+    Detects list-type questions and formats accordingly.
+    """
+    if not sentences:
+        return (
+            "I don't have specific information about that in my knowledge base. "
+            "Try asking about a specific Indian state, craft type, GI tag, or artisan on CraftTrail."
+        )
+
+    q_lower = question.lower()
+    is_list_q = any(w in q_lower for w in [
+        "list", "what are", "which", "name", "types", "examples",
+        "crafts", "languages", "states", "districts", "clusters",
+    ])
+    is_how_q  = any(w in q_lower for w in ["how", "process", "steps", "make", "create", "work"])
+    is_what_q = any(w in q_lower for w in ["what is", "what are", "define", "describe", "tell me"])
+
+    # ── Build intro ────────────────────────────────────────────────────────
+    # Extract a strong opening sentence (highest scored one)
+    intro = sentences[0]
+    rest  = sentences[1:]
+
+    if is_list_q and len(rest) >= 2:
+        # Format as bullet list
+        bullets = "\n".join(f"• {s}" for s in rest[:6])
+        return f"{intro}\n\n{bullets}"
+    elif is_how_q and len(rest) >= 2:
+        # Numbered steps feel more natural for "how" questions
+        steps = "\n".join(f"{i+1}. {s}" for i, s in enumerate(rest[:5]))
+        return f"{intro}\n\n{steps}"
+    else:
+        # Paragraph style
+        paragraphs = [intro]
+        if rest:
+            paragraphs.append(" ".join(rest[:4]))
+        return "\n\n".join(paragraphs)
 
 
 def get_collection():
@@ -53,97 +155,90 @@ def get_collection():
         return None
 
 
-def retrieve(question: str, top_k: int = 6) -> list[str]:
-    """Semantic search — return top_k most relevant chunks."""
+def retrieve(question: str, top_k: int = 7) -> list[str]:
+    """Semantic search — return top_k most relevant chunks from ChromaDB."""
     collection = get_collection()
     if not collection:
         return []
-
     count = collection.count()
     if count == 0:
         return []
-
     results = collection.query(
         query_texts=[question],
         n_results=min(top_k, count),
         include=["documents", "distances"],
     )
-    docs = results.get("documents", [[]])[0]
-    return [d for d in docs if d and d.strip()]
-
-
-def generate(question: str, context_chunks: list[str], chat_history: list[dict] = None) -> str:
-    """Call Groq with retrieved context and return the answer."""
-    if not GROQ_API_KEY or GROQ_API_KEY.startswith("gsk_PASTE"):
-        return (
-            "⚠️ Groq API key not configured. Please add your `gsk_...` key to `rag/.env`. "
-            "Get it free at https://console.groq.com"
-        )
-
-    context = "\n\n---\n\n".join(context_chunks) if context_chunks else "No relevant context found."
-
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-    # Include recent chat history for follow-up questions
-    if chat_history:
-        for msg in chat_history[-6:]:   # last 3 turns
-            messages.append(msg)
-
-    messages.append({
-        "role": "user",
-        "content": f"Context from CraftTrail knowledge base:\n{context}\n\nQuestion: {question}"
-    })
-
-    try:
-        response = groq_client.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            temperature=0.3,   # low temp = more factual, less creative
-            max_tokens=1024,
-            stream=False,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        err = str(e)
-        if "invalid_api_key" in err or "401" in err:
-            return (
-                "❌ Invalid Groq API key. Your key should start with `gsk_` — "
-                "the `org_` ID is not an API key. Get the correct key at https://console.groq.com → API Keys."
-            )
-        return f"I encountered an error: {err}. Please try again."
+    docs      = results.get("documents", [[]])[0]
+    distances = results.get("distances",  [[]])[0]
+    # Filter out very poor matches (distance > 1.8 = not relevant)
+    filtered = [d for d, dist in zip(docs, distances) if d and d.strip() and dist < 1.8]
+    return filtered or [d for d in docs if d and d.strip()]  # fallback: return all if all poor
 
 
 def answer(question: str, context: str = "", chat_history: list[dict] = None) -> dict:
     """
-    Main RAG pipeline:
-    1. Retrieve relevant chunks from ChromaDB
-    2. Optionally prepend extra context (e.g. state name, artisan name from the UI)
-    3. Call Groq LLM
-    4. Return answer + sources info
+    Local RAG pipeline (no external API):
+    1. Semantic retrieval from ChromaDB
+    2. Extractive sentence ranking by keyword relevance
+    3. Structured answer formatting, with a graceful off-topic redirect
     """
-    # Semantic retrieval
-    chunks = retrieve(question, top_k=6)
+    # ── Retrieval ──
+    chunks = retrieve(question, top_k=7)
 
-    # Prepend UI context (state/artisan info passed from React) as first chunk
+    # Prepend UI context (artisan/state info passed from React)
     if context and context.strip():
         chunks = [context.strip()] + chunks
 
     if not chunks:
         return {
             "answer": (
-                "I don't have enough information indexed yet. "
-                "Run `python ingest.py` in the rag/ folder to build the knowledge base, "
-                "then ask me again!"
+                "I'm CraftTrail's craft guide — I can tell you about India's craft "
+                "traditions, the artisans, their techniques, GI tags, and which crafts "
+                "belong to which regions. Try asking me something like \"What is Pochampally "
+                "Ikat?\" or \"Which crafts are from Rajasthan?\""
             ),
             "sources": [],
             "retrieved": 0,
         }
 
-    answer_text = generate(question, chunks, chat_history)
+    # ── Extractive generation ──
+    sentences = _extract_best_sentences(chunks, question, max_sentences=8)
+
+    # If retrieval returned chunks but none actually matched the question well,
+    # the question is probably off-topic — redirect gracefully instead of dumping
+    # unrelated text.
+    query_tokens = _tokenize(question)
+    best_score = 0.0
+    if query_tokens:
+        for s in sentences:
+            best_score = max(best_score, _score_sentence(s, query_tokens))
+
+    if query_tokens and best_score == 0.0:
+        return {
+            "answer": (
+                "That's a little outside what I know about — I focus on India's craft "
+                "heritage and the artisans on CraftTrail. Ask me about a craft, a technique, "
+                "or a region and I'll help! For example: \"Tell me about Kutch embroidery\" "
+                "or \"What crafts can I find near Jaipur?\""
+            ),
+            "sources": [],
+            "retrieved": len(chunks),
+        }
+
+    answer_text = _format_answer(question, sentences, chunks)
 
     return {
-        "answer": answer_text,
-        "sources": [],
+        "answer":    answer_text,
+        "sources":   [],
+        "retrieved": len(chunks),
+    }
+    # ── Local generation ───────────────────────────────────────────────────
+    sentences   = _extract_best_sentences(chunks, question, max_sentences=8)
+    answer_text = _format_answer(question, sentences, chunks)
+
+    return {
+        "answer":    answer_text,
+        "sources":   [],
         "retrieved": len(chunks),
     }
 
@@ -156,8 +251,8 @@ def status() -> dict:
     count = collection.count()
     return {
         "indexed": count,
-        "ready": count > 0,
+        "ready":   count > 0,
         "message": f"{count} chunks indexed in ChromaDB" if count > 0 else "Empty. Run python ingest.py",
-        "model": MODEL,
-        "groq_configured": bool(GROQ_API_KEY and not GROQ_API_KEY.startswith("gsk_PASTE")),
+        "model":   "local-extractive (no API required)",
+        "groq_configured": True,   # kept for frontend compatibility — always True now
     }

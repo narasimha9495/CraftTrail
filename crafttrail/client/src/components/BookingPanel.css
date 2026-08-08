@@ -1,6 +1,14 @@
 .bp { margin-top: 18px; }
 .bp__err { margin-bottom: 12px; }
 .bp__cta { width: 100%; display: grid; place-items: center; text-decoration: none; }
+.bp__cta--directions {
+  background: #0f9d58 !important;
+  color: #fff !important;
+  border-color: #0f9d58 !important;
+  font-size: .82rem;
+  gap: 6px;
+}
+.bp__cta--directions:hover { background: #0b8045 !important; border-color: #0b8045 !important; }
 .bp__fine { margin: 11px 0 0; font-size: .72rem; line-height: 1.5; color: var(--resist-dim); }
 .bp__closed { font-size: .84rem; color: var(--resist-dim); margin: 0; line-height: 1.55; }
 
@@ -48,3 +56,32 @@
 .bp__conv { color: var(--ink-dim); font-weight: 400; font-size: .85em; }
 .bp__currency { margin: 12px 0; }
 .bp__currency label { display: block; font-size: .75rem; color: var(--ink-dim); margin-bottom: 4px; }
+
+/* ── Rate-your-visit step ─────────────────────────────────── */
+.bp__review-header { margin: 0 0 16px; }
+.bp__review-header h3 { margin: 0 0 4px; font-size: 1rem; color: var(--resist); }
+.bp__review-header p  { margin: 0; font-size: .78rem; color: var(--resist-dim); line-height: 1.5; }
+
+.bp__stars { display: flex; gap: 6px; margin: 0 0 16px; }
+.bp__star {
+  font-size: 1.8rem; cursor: pointer;
+  color: var(--line);
+  transition: color .12s, transform .1s;
+  line-height: 1;
+  user-select: none;
+}
+.bp__star.active  { color: #f5a623; }
+.bp__star:hover   { color: #f5a623; transform: scale(1.18); }
+
+.bp__auth-row {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 16px; font-size: .82rem; color: var(--resist-mid);
+  cursor: pointer;
+}
+.bp__auth-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--verdigris); cursor: pointer; }
+
+.bp__review-done {
+  text-align: center; padding: 14px 0;
+}
+.bp__review-done .bp__star-echo { font-size: 1.4rem; margin-bottom: 8px; }
+.bp__review-done p { font-size: .84rem; color: var(--resist-mid); margin: 0; }

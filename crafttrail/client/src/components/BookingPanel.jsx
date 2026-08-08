@@ -6,6 +6,15 @@ import { inr, todayPlus } from '../lib/format.js';
 import './BookingPanel.css';
 import { CURRENCIES, getRates, convert, getSavedCurrency, setSavedCurrency } from '../lib/currency.js';
 
+/** Mirror of server priceFromTrust — keeps UI price in sync with what backend charges */
+function priceFromTrust(trustScore) {
+  const s = trustScore || 0;
+  if (s >= 80) return 2500;
+  if (s >= 65) return 1800;
+  if (s >= 50) return 1200;
+  return 1000;
+}
+
 /**
  * The whole loop, in one panel: request → confirm → escrow held → QR scanned
  * at the workshop → 95/5 split → certificate minted.
@@ -16,7 +25,7 @@ import { CURRENCIES, getRates, convert, getSavedCurrency, setSavedCurrency } fro
 export default function BookingPanel({ artisan, onChanged }) {
   const { user } = useAuth();
   const loc = useLocation();
-  const [step, setStep] = useState('idle'); // idle | form | pending | confirmed | done
+  const [step, setStep] = useState('idle'); // idle | form | pending | confirmed | done | rate | rated
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
@@ -36,11 +45,17 @@ export default function BookingPanel({ artisan, onChanged }) {
   useEffect(() => { getRates().then(setRates); }, []);
   const pickCurrency = (c) => { setCurrency(c); setSavedCurrency(c); };
   const [result, setResult] = useState(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewAuth, setReviewAuth] = useState(true);
+  const [reviewDone, setReviewDone] = useState(null);
 
   
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const unavailable = artisan.availability.state === 'UNAVAILABLE';
-  const total = artisan.workshop.priceInr * Number(form.partySize || 1);
+  const unitPrice   = priceFromTrust(artisan.trustScore);   // ₹1000 / ₹1200 / ₹1800 / ₹2500
+  const total       = unitPrice * Number(form.partySize || 1);
 
   const guard = async (fn) => {
     setBusy(true);
@@ -82,6 +97,19 @@ export default function BookingPanel({ artisan, onChanged }) {
       const r = await api.complete(booking._id, b.payment.qrToken);
       setResult(r);
       setStep('done');
+    });
+
+  const submitReview = () =>
+    guard(async () => {
+      if (!reviewRating) throw new Error('Please pick a star rating');
+      const r = await api.review(booking._id, {
+        rating: reviewRating,
+        text: reviewText,
+        authenticityConfirmed: reviewAuth,
+      });
+      setReviewDone(r);
+      setStep('rated');
+      onChanged?.();
     });
 
   if (unavailable) {
@@ -258,9 +286,104 @@ export default function BookingPanel({ artisan, onChanged }) {
           <Link className="btn btn-primary bp__cta" to={`/cert/${result.certificate.code}`}>
             Open your certificate
           </Link>
+          <button className="btn bp__cta" style={{ marginTop: 10 }} onClick={() => setStep('rate')}>
+            Rate your visit
+          </button>
+          {(() => {
+            const co = artisan?.location?.coordinates || artisan?.coordinates;
+            const url = co && co.length === 2
+              ? `https://www.google.com/maps/dir/?api=1&destination=${co[1]},${co[0]}&travelmode=driving`
+              : `https://www.google.com/maps/search/${encodeURIComponent((artisan?.workshop?.title || artisan?.name || '') + ' ' + (artisan?.district || '') + ' ' + (artisan?.state || ''))}`;
+            return (
+              <a
+                className="btn bp__cta bp__cta--directions"
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginTop: 10 }}
+              >
+                📍 Get Directions to Workshop
+              </a>
+            );
+          })()}
           <p className="bp__fine">
             Issued while you are still standing in the workshop. That is the point.
           </p>
+        </div>
+      )}
+
+      {step === 'rate' && (
+        <div className="bp__state">
+          <div className="bp__review-header">
+            <h3>How was your visit?</h3>
+            <p>Your rating updates {artisan.name}'s trust score in real time.</p>
+          </div>
+
+          <div className="bp__stars">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <span
+                key={n}
+                className={`bp__star${n <= (reviewHover || reviewRating) ? ' active' : ''}`}
+                onMouseEnter={() => setReviewHover(n)}
+                onMouseLeave={() => setReviewHover(0)}
+                onClick={() => setReviewRating(n)}
+                role="button"
+                aria-label={`${n} star${n > 1 ? 's' : ''}`}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+
+          <div className="field">
+            <label htmlFor="bp-review-text">Tell others what you experienced (optional)</label>
+            <textarea
+              id="bp-review-text"
+              className="input"
+              rows={3}
+              style={{ resize: 'vertical', fontFamily: 'inherit' }}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="The weaving demonstration was incredible…"
+            />
+          </div>
+
+          <label className="bp__auth-row">
+            <input
+              type="checkbox"
+              checked={reviewAuth}
+              onChange={(e) => setReviewAuth(e.target.checked)}
+            />
+            I confirm this craft is authentically handmade
+          </label>
+
+          <button
+            className="btn btn-primary bp__cta"
+            disabled={busy || !reviewRating}
+            onClick={submitReview}
+          >
+            {busy ? <span className="spinner" /> : 'Submit rating'}
+          </button>
+          <button className="btn bp__cta" style={{ marginTop: 8 }} onClick={() => setStep('done')}>
+            Skip
+          </button>
+        </div>
+      )}
+
+      {step === 'rated' && reviewDone && (
+        <div className="bp__state bp__review-done">
+          <div className="bp__star-echo">
+            {'★'.repeat(reviewRating)}{'☆'.repeat(5 - reviewRating)}
+          </div>
+          <p>
+            Thank you! {artisan.name}'s trust score is now{' '}
+            <strong>{reviewDone.artisanTrustScore}</strong>/100.
+          </p>
+          {result && (
+            <Link className="btn btn-primary bp__cta" style={{ marginTop: 14 }} to={`/cert/${result.certificate.code}`}>
+              Open your certificate
+            </Link>
+          )}
         </div>
       )}
     </div>

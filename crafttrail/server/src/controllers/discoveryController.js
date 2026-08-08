@@ -1,7 +1,7 @@
 import Cluster from '../models/Cluster.js';
 import Artisan from '../models/Artisan.js';
 import { haversineKm, discoveryScore } from '../utils/haversine.js';
-import { badgeFor } from '../services/verificationService.js';
+import { badgeFor, priceFromTrust } from '../services/verificationService.js';
 
 /**
  * GET /api/discover?lat=&lng=&radiusKm=&limit=
@@ -191,7 +191,7 @@ export async function searchArtisans(req, res, next) {
         trustScore:   a.trustScore,
         badge:        badgeFor(a),
         availability: a.availability?.state,
-        priceInr:     a.workshop?.priceInr || 0,
+        priceInr:     priceFromTrust(a.trustScore),   // dynamic trust-based price
         photo:        a.photos?.[0] || null,
         isDemo:       a.isDemo,
         coordinates:  a.location?.coordinates || null,

@@ -69,10 +69,10 @@ def health():
 if __name__ == "__main__":
     st = retriever.status()
     print("\n" + "=" * 55)
-    print("  CraftTrail RAG Server")
+    print("  CraftTrail RAG Server  (local · no API required)")
     print("=" * 55)
     print(f"  Port        : {PORT}")
-    print(f"  Groq key    : {'OK - configured' if st['groq_configured'] else 'MISSING - add gsk_ key to .env'}")
+    print(f"  Engine      : Local extractive (ChromaDB only)")
     print(f"  Knowledge   : {st['indexed']} chunks indexed")
     if st["indexed"] == 0:
         print("  WARNING: Run  python ingest.py  first!")

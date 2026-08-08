@@ -32,6 +32,8 @@ export default function Explore({ personalised = false }) {
   const [states, setStates] = useState([]);
   const [data, setData] = useState(null);
   const [standaloneArtisans, setStandaloneArtisans] = useState([]);
+  const [stateArtisans, setStateArtisans] = useState([]);  // artisans for state-browse mode
+  const [stateArtisansLoading, setStateArtisansLoading] = useState(false);
   const [activeId, setActiveId] = useState(null);
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,21 +49,17 @@ export default function Explore({ personalised = false }) {
   }, []);
 
   // Location resolution: saved home city → geolocation → Jaipur.
+  // Location resolution: live geolocation → saved home city → Jaipur.
   useEffect(() => {
-    if (!personalised) return;
     let dead = false;
-
-    if (user?.homeCity?.lat) {
-      setCity(user.homeCity);
-      setLocating(false);
-      return () => { dead = true; };
-    }
     locate().then((pos) => {
       if (dead) return;
       if (pos) {
         const near = nearestCity(pos);
         setCity(near);
-        updatePrefs?.({ homeCity: near }).catch(() => {});
+        if (personalised) updatePrefs?.({ homeCity: near }).catch(() => {});
+      } else if (user?.homeCity?.lat) {
+        setCity(user.homeCity);
       } else {
         setLocNote('We could not read your location, so we started in Jaipur. Pick a city below.');
       }
@@ -69,7 +67,6 @@ export default function Explore({ personalised = false }) {
     });
     return () => { dead = true; };
   }, [personalised, user]);
-
   // Fetch cluster-based artisans (geo query)
   useEffect(() => {
     if (browseState) return; 
@@ -84,8 +81,9 @@ export default function Explore({ personalised = false }) {
     return () => { dead = true; };
   }, [city, radiusKm, interests, sort]);
 
-  // Fetch standalone artisans using /discover/search
+  // Fetch standalone artisans using /discover/search (city mode)
   useEffect(() => {
+    if (browseState) return;
     let dead = false;
     const qs = new URLSearchParams({ limit: '40', q: searchQ });
     if (city.state) qs.set('state', city.state);
@@ -96,7 +94,21 @@ export default function Explore({ personalised = false }) {
       .then(d => !dead && setStandaloneArtisans(d.artisans || []))
       .catch(() => {});
     return () => { dead = true; };
-  }, [city, interests, searchQ]);
+  }, [city, interests, searchQ, browseState]);
+
+  // Fetch artisans by state when state-browse mode is active
+  useEffect(() => {
+    if (!browseState) { setStateArtisans([]); return; }
+    let dead = false;
+    setStateArtisansLoading(true);
+    const qs = new URLSearchParams({ state: browseState, limit: '40' });
+    fetch(`${BASE}/discover/search?${qs}`)
+      .then(r => r.json())
+      .then(d => !dead && setStateArtisans(d.artisans || []))
+      .catch(() => !dead && setStateArtisans([]))
+      .finally(() => !dead && setStateArtisansLoading(false));
+    return () => { dead = true; };
+  }, [browseState]);
 
   const toggleCraft = useCallback(
     (craft) => {
@@ -258,24 +270,7 @@ export default function Explore({ personalised = false }) {
         )}
       </header>
 
-      {/* ── State browse: village list popup ── */}
-      {browseState && (
-        <div className="ex__statepanel shell">
-          <div className="ex__statepanel-head">
-            <h3>{browseState} — {stateClusters.length} craft village{stateClusters.length === 1 ? '' : 's'}</h3>
-            <button className="btn btn-sm" onClick={() => setBrowseState('')}>Back to city search</button>
-          </div>
-          <div className="ex__statevillages">
-            {stateClusters.map((c) => (
-              <div key={c._id} className="ex__village" onClick={() => setActiveId(c._id)}>
-                <strong>{c.name}</strong>
-                <span>{c.craft}</span>
-                <span className="mono">{c.district}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ── State browse panel moved INTO the right aside — no separate block above map ── */}
 
       <div className="ex__board shell">
         <div className="ex__map card">
@@ -283,83 +278,118 @@ export default function Explore({ personalised = false }) {
             origin={{ lat: city.lat, lng: city.lng }}
             radiusKm={browseState ? 0 : radiusKm}
             clusters={shownClusters}
-            standaloneArtisans={browseState ? [] : extraArtisans}
+            standaloneArtisans={browseState ? stateArtisans : standaloneArtisans}
             activeId={activeId}
             onSelect={setActiveId}
             showArtisans={!browseState}
             onArtisan={setActiveId}
             fitClusters={!!browseState}
+            stateMode={!!browseState}
           />  
         </div>
 
         <aside className="ex__list">
-          <div className="ex__count">
-            {loading && !browseState ? (
-              <span className="ex__loading"><span className="spinner" /> Ranking by distance and significance…</span>
-            ) : browseState ? (
-              <span><strong>{stateClusters.length}</strong> village{stateClusters.length === 1 ? '' : 's'} across {browseState}</span>
-            ) : (
-              <span>
-                <strong>{totalArtisans}</strong> artisan{totalArtisans === 1 ? '' : 's'} ·{' '}
-                <strong>{data?.clusters.length ?? 0}</strong> cluster{data?.clusters.length === 1 ? '' : 's'}
-                {interests.length > 0 && ` · ${interests.length} craft${interests.length === 1 ? '' : 's'} you follow`}
-                {extraArtisans.length > 0 && ` · ${extraArtisans.length} independent artisan${extraArtisans.length === 1 ? '' : 's'}`}
-              </span>
-            )}
-          </div>
-
-          {err && !browseState && (
-            <div className="notice notice-bad">
-              Cannot reach the API. Start the server on port 5000, then reload. <br />
-              <span className="mono">{err}</span>
-            </div>
-          )}
-
-          {emptyBecauseNoSeed && !browseState && (
-            <div className="notice notice-bad">
-              No artisans found. Try widening the radius or searching by name.
-            </div>
-          )}
-
-          {emptyBecauseFilter && !browseState && (
-            <div className="notice">
-              Nothing nearby matches those crafts. Clear the filter, or widen the radius — the real
-              clusters are usually 30–60 km outside the city.
-              <div style={{ marginTop: 12 }}>
-                <button className="btn btn-sm" onClick={() => { setInterests([]); setParams({}, { replace: true }); }}>
-                  Clear filter
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!loading && !browseState &&
-            clusterArtisans.map(({ artisan, cluster }) => (
-              <ArtisanCard
-                key={artisan.id}
-                artisan={artisan}
-                cluster={cluster}
-                active={activeId === artisan.id || activeId === cluster.id}
-                onHover={setActiveId}
-              />
-            ))}
-
-          {!browseState && extraArtisans.length > 0 && (
+          {browseState ? (
             <>
-              {clusterArtisans.length > 0 && (
-                <div className="ex__divider">
-                  <span>Independent Artisans</span>
-                </div>
-              )}
-              {extraArtisans.map((artisan) => (
+              {/* ── State browse: same card UI as city mode ── */}
+              <div className="ex__count">
+                {stateArtisansLoading ? (
+                  <span className="ex__loading"><span className="spinner" /> Finding artisans in {browseState}…</span>
+                ) : (
+                  <span>
+                    <strong>{stateArtisans.length}</strong> artisan{stateArtisans.length === 1 ? '' : 's'} across {browseState}
+                    {' · '}
+                    <button
+                      style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }}
+                      onClick={() => setBrowseState('')}
+                    >
+                      ← Back to city search
+                    </button>
+                  </span>
+                )}
+              </div>
+              {!stateArtisansLoading && stateArtisans.map((artisan) => (
                 <ArtisanCard
                   key={artisan.id}
                   artisan={artisan}
                   cluster={null}
-                  active={activeId === artisan.id}
+                  active={activeId === (artisan.id || artisan._id)}
                   onHover={setActiveId}
                 />
               ))}
+              {!stateArtisansLoading && stateArtisans.length === 0 && (
+                <div className="notice">No artisans found for {browseState}.</div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="ex__count">
+                {loading ? (
+                  <span className="ex__loading"><span className="spinner" /> Ranking by distance and significance…</span>
+                ) : (
+                  <span>
+                    <strong>{totalArtisans}</strong> artisan{totalArtisans === 1 ? '' : 's'} ·{' '}
+                    <strong>{data?.clusters.length ?? 0}</strong> cluster{data?.clusters.length === 1 ? '' : 's'}
+                    {interests.length > 0 && ` · ${interests.length} craft${interests.length === 1 ? '' : 's'} you follow`}
+                    {extraArtisans.length > 0 && ` · ${extraArtisans.length} independent artisan${extraArtisans.length === 1 ? '' : 's'}`}
+                  </span>
+                )}
+              </div>
+
+              {err && (
+                <div className="notice notice-bad">
+                  Cannot reach the API. Start the server on port 5000, then reload. <br />
+                  <span className="mono">{err}</span>
+                </div>
+              )}
+
+              {emptyBecauseNoSeed && (
+                <div className="notice notice-bad">
+                  No artisans found. Try widening the radius or searching by name.
+                </div>
+              )}
+
+              {emptyBecauseFilter && (
+                <div className="notice">
+                  Nothing nearby matches those crafts. Clear the filter, or widen the radius — the real
+                  clusters are usually 30–60 km outside the city.
+                  <div style={{ marginTop: 12 }}>
+                    <button className="btn btn-sm" onClick={() => { setInterests([]); setParams({}, { replace: true }); }}>
+                      Clear filter
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!loading &&
+                clusterArtisans.map(({ artisan, cluster }) => (
+                  <ArtisanCard
+                    key={artisan.id}
+                    artisan={artisan}
+                    cluster={cluster}
+                    active={activeId === artisan.id || activeId === cluster.id}
+                    onHover={setActiveId}
+                  />
+                ))}
+
+              {extraArtisans.length > 0 && (
+                <>
+                  {clusterArtisans.length > 0 && (
+                    <div className="ex__divider">
+                      <span>Independent Artisans</span>
+                    </div>
+                  )}
+                  {extraArtisans.map((artisan) => (
+                    <ArtisanCard
+                      key={artisan.id}
+                      artisan={artisan}
+                      cluster={null}
+                      active={activeId === artisan.id}
+                      onHover={setActiveId}
+                    />
+                  ))}
+                </>
+              )}
             </>
           )}
         </aside>

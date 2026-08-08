@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView.jsx';
 import StateDetailModal from '../components/StateDetailModal.jsx';
@@ -29,6 +29,14 @@ const STATES = [
 
 function ShopByState({ user, onStateClick }) {
   const loop = [...STATES, ...STATES];
+  const scrollRef = useRef(null);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = 300; // scroll by roughly one card width + gap
+      scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
   return (
     <section className="lp__states">
       <div className="shell lp__statesHead">
@@ -48,31 +56,39 @@ function ShopByState({ user, onStateClick }) {
         )}
       </div>
 
-      <div className="states-viewport">
-        <div className="states-track">
-          {loop.map((s, i) => (
-            <article
-              className={`state-card swatch--${s.swatch} ${user ? 'is-unlocked' : ''}`}
-              key={`${s.key}-${i}`}
-              onClick={() => onStateClick(s.key)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && onStateClick(s.key)}
-              aria-label={`Explore ${s.name} heritage`}
-            >
-              <div className="state-card__pattern" aria-hidden="true" />
-              <div className="state-card__label">
-                <span className="state-card__name">{s.name}</span>
-                <span className="state-card__craft">{s.craft}</span>
-              </div>
-              {user ? (
-                <div className="state-card__ai-hint" aria-hidden="true">🤖 AI Guide</div>
-              ) : (
-                <div className="state-card__login-hint" aria-hidden="true">🔒 Sign in to explore</div>
-              )}
-            </article>
-          ))}
+      <div className="states-wrapper">
+        <button className="states-nav states-nav--prev" aria-label="Scroll left" onClick={() => scroll('left')}>
+          &#8249;
+        </button>
+        <div className="states-viewport" ref={scrollRef}>
+          <div className="states-track">
+            {loop.map((s, i) => (
+              <article
+                className={`state-card swatch--${s.swatch} ${user ? 'is-unlocked' : ''}`}
+                key={`${s.key}-${i}`}
+                onClick={() => onStateClick(s.key)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onStateClick(s.key)}
+                aria-label={`Explore ${s.name} heritage`}
+              >
+                <div className="state-card__pattern" aria-hidden="true" />
+                <div className="state-card__label">
+                  <span className="state-card__name">{s.name}</span>
+                  <span className="state-card__craft">{s.craft}</span>
+                </div>
+                {user ? (
+                  <div className="state-card__ai-hint" aria-hidden="true">🤖 AI Guide</div>
+                ) : (
+                  <div className="state-card__login-hint" aria-hidden="true">🔒 Sign in to explore</div>
+                )}
+              </article>
+            ))}
+          </div>
         </div>
+        <button className="states-nav states-nav--next" aria-label="Scroll right" onClick={() => scroll('right')}>
+          &#8250;
+        </button>
       </div>
 
       <div className="shell lp__statesfoot">

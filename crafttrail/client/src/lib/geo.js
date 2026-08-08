@@ -17,7 +17,7 @@ export const nearestCity = (pos) =>
  * Never blocks. Resolves to null on denial, timeout, or an insecure origin —
  * the caller renders immediately with a fallback and offers the city picker.
  */
-export function locate({ timeout = 5000 } = {}) {
+export function locate({ timeout = 15000 } = {}) {
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve(null);
     const done = (v) => resolve(v);
@@ -31,7 +31,7 @@ export function locate({ timeout = 5000 } = {}) {
         clearTimeout(timer);
         done(null);
       },
-      { timeout, maximumAge: 600000 }
+      { timeout, maximumAge: 0, enableHighAccuracy: true }
     );
   });
 }

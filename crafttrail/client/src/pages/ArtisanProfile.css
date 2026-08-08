@@ -111,6 +111,7 @@
   font-weight: 600;
 }
 .ws__price span { font-family: var(--body); font-size: .74rem; color: var(--resist-dim); margin-left: 6px; }
+.ws__price-note { margin: 4px 0 12px; font-size: .68rem; color: var(--accent); opacity: .8; }
 
 @media (max-width: 940px) {
   .profile__grid { grid-template-columns: 1fr; }

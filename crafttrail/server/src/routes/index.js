@@ -60,6 +60,11 @@ router.post('/bookings', requireAuth, requestBooking);
 router.post('/bookings/:id/confirm', confirmBooking);
 router.post('/bookings/:id/complete', completeBooking);
 router.post('/bookings/:id/review', requireAuth, leaveReview);
+// Alias: POST /api/reviews  { bookingId, rating, text, ... }
+router.post('/reviews', requireAuth, async (req, res, next) => {
+  req.params.id = req.body.bookingId;
+  return leaveReview(req, res, next);
+});
 
 // --- WhatsApp ----------------------------------------------------------
 router.post('/whatsapp/webhook', webhook);

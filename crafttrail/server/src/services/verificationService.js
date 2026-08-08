@@ -83,13 +83,18 @@ export function computeTrustScore(verification) {
   if (t1.giDistrictMatch) score += 20;
 
   const endorsements = (t2.endorsements || []).length;
-  if (endorsements >= 1) score += 20;
-  if (endorsements >= 2) score += 15;
+  // Fall back to status string when endorsements array is empty (seeded artisans)
+  const effectiveEndorsements =
+    endorsements > 0 ? endorsements :
+    t2.status === 'CORROBORATED' ? 2 :
+    t2.status === 'PARTIAL'      ? 1 : 0;
+  if (effectiveEndorsements >= 1) score += 20;
+  if (effectiveEndorsements >= 2) score += 15;
 
   const { reviewCount = 0, avgRating = 0 } = t3;
   if (reviewCount > 0) {
-    const quality = avgRating / 5; // 0..1
-    const volume = Math.min(reviewCount / 10, 1); // saturates at 10 reviews
+    const quality = avgRating / 5;                     // 0..1  (star rating)
+    const volume  = Math.min(reviewCount / 3, 1);      // saturates at 3 reviews (was 10 — made 1 review worth only 3 pts)
     score += Math.round(25 * quality * volume);
   }
 
@@ -100,6 +105,26 @@ export function tier2Status(endorsementCount) {
   if (endorsementCount >= 2) return 'CORROBORATED';
   if (endorsementCount === 1) return 'PARTIAL';
   return 'NONE';
+}
+
+/**
+ * Dynamic workshop price driven by trust score.
+ * Works exactly like Amazon seller ratings — higher trust = higher earned rate.
+ *
+ *   trustScore  0–49   → ₹1,000  (base, unrated / few reviews)
+ *   trustScore 50–64   → ₹1,200  (50% threshold)
+ *   trustScore 65–79   → ₹1,800  (65% threshold)
+ *   trustScore 80–100  → ₹2,500  (top tier, 80%+)
+ *
+ * This is computed at request-time, never stored — so it automatically
+ * upgrades the moment a review pushes an artisan into the next band.
+ */
+export function priceFromTrust(trustScore) {
+  const s = trustScore || 0;
+  if (s >= 80) return 2500;
+  if (s >= 65) return 1800;
+  if (s >= 50) return 1200;
+  return 1000;
 }
 
 /** Human-facing badge, derived -- never stored, so it can never drift. */

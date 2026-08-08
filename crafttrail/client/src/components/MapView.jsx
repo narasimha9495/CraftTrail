@@ -11,26 +11,45 @@ const INDIA_BOUNDS = L.latLngBounds(
 );
 
 function clusterIcon({ significance, availableNow, active }) {
-  const size = 18 + (significance || 6) * 1.6;
-  const tone = availableNow > 0 ? 'verdigris' : 'haldi';
+  const base = 28 + (significance || 6) * 1.4;
+  const h = Math.round(base);
+  const w = Math.round(h * 0.675);
+  const color = availableNow > 0 ? '#2a9d8f' : '#e9c46a';
+  const shadow = active
+    ? 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))'
+    : 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))';
   return L.divIcon({
     className: 'pin-wrap',
-    html: `<span class="pin pin--${tone} ${active ? 'is-active' : ''}" style="--s:${size}px">
-             <span class="pin__core"></span>
-             ${availableNow > 0 ? '<span class="pin__ring"></span>' : ''}
-           </span>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 27 40"
+            style="filter:${shadow};cursor:pointer">
+            <path d="M13.5 0C6.04 0 0 6.04 0 13.5c0 9.5 13.5 26.5 13.5 26.5S27 23 27 13.5C27 6.04 20.96 0 13.5 0z"
+              fill="${color}"/>
+            <circle cx="13.5" cy="13.5" r="5.5" fill="white" opacity="0.9"/>
+          </svg>`,
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    popupAnchor: [0, -h],
   });
 }
 
-function artisanIcon({ availability, active }) {
-  const tone = availability === 'AVAILABLE' ? 'verdigris' : availability === 'UNAVAILABLE' ? 'dim' : 'haldi';
+function artisanIcon({ availability, active, stateMode }) {
+  const color = availability === 'AVAILABLE' ? '#2a9d8f'
+    : availability === 'UNAVAILABLE' ? '#999'
+    : '#e9c46a';
+  const h = stateMode ? 40 : 30;
+  const w = stateMode ? 27 : 20;
+  const shadow = active ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.55))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))';
   return L.divIcon({
     className: 'pin-wrap',
-    html: `<span class="apin apin--${tone} ${active ? 'is-active' : ''}"></span>`,
-    iconSize: [11, 11],
-    iconAnchor: [5.5, 5.5],
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 27 40"
+            style="filter:${shadow};cursor:pointer">
+            <path d="M13.5 0C6.04 0 0 6.04 0 13.5c0 9.5 13.5 26.5 13.5 26.5S27 23 27 13.5C27 6.04 20.96 0 13.5 0z"
+              fill="${color}"/>
+            <circle cx="13.5" cy="13.5" r="5.5" fill="white" opacity="0.9"/>
+          </svg>`,
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    popupAnchor: [0, -h],
   });
 }
 
@@ -89,6 +108,7 @@ export default function MapView({
   origin,
   radiusKm,
   clusters = [],
+  standaloneArtisans = [],
   activeId,
   onSelect,
   showArtisans = false,
@@ -96,6 +116,7 @@ export default function MapView({
   userLocation = null,
   portraitMobile = false,
   fitClusters = false,
+  stateMode = false,
 }) {
   const { isDark } = useTheme();
   const tiles = isDark
@@ -173,26 +194,38 @@ export default function MapView({
         );
       })}
 
-      {showArtisans &&
-        clusters.flatMap((c) =>
-          (c.artisans || [])
-            .filter((a) => a.coordinates)
-            .map((a) => (
-              <Marker
-                key={a.id}
-                position={[a.coordinates[1], a.coordinates[0]]}
-                icon={artisanIcon({ availability: a.availability, active: activeId === a.id })}
-                eventHandlers={{ click: () => onArtisan?.(a.id) }}
-              >
-                <Popup>
-                  <strong style={{ fontSize: '.92rem' }}>{a.name}</strong>
-                  <div style={{ fontSize: '.75rem', color: 'var(--ink-dim)', marginTop: 3 }}>
-                    {a.craft} · trust {a.trustScore}/100
-                  </div>
-                </Popup>
-              </Marker>
-            ))
-        )}
+      {/* Standalone artisans (those not inside a cluster) */}
+      {standaloneArtisans
+        .filter((a) => {
+          const co = a.coordinates || a.location?.coordinates;
+          return co && co.length === 2;
+        })
+        .map((a) => {
+          const co = a.coordinates || a.location?.coordinates;
+          return (
+            <Marker
+              key={a.id || a._id}
+              position={[co[1], co[0]]}
+              icon={artisanIcon({ availability: a.availability?.state || a.availability, active: activeId === (a.id || a._id), stateMode })}
+              eventHandlers={{ click: () => onArtisan?.(a.id || a._id) }}
+            >
+              <Popup>
+                <strong style={{ fontSize: '.92rem' }}>{a.name}</strong>
+                <div style={{ fontSize: '.78rem', color: 'var(--ink-mid)', marginTop: 2 }}>{a.craft}</div>
+                <div style={{ fontSize: '.74rem', color: 'var(--ink-dim)', marginTop: 2 }}>{a.district}, {a.state}</div>
+                {co && (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${co[1]},${co[0]}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: '.74rem', color: 'var(--accent)', display: 'block', marginTop: 6 }}
+                  >
+                    Get directions ↗
+                  </a>
+                )}
+              </Popup>
+            </Marker>
+          );
+        })}
     </MapContainer>
   );
 }

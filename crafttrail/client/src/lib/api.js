@@ -49,6 +49,7 @@ const api = {
   booking: (id) => request(`/bookings/${id}`),
   confirm: (id, via) => request(`/bookings/${id}/confirm`, { method: 'POST', body: JSON.stringify({ via }) }),
   complete: (id, qrToken) => request(`/bookings/${id}/complete`, { method: 'POST', body: JSON.stringify({ qrToken }) }),
+  review: (bookingId, body) => request(`/bookings/${bookingId}/review`, { method: 'POST', body: JSON.stringify(body) }),
 
   whatsapp: (from, body) => request('/whatsapp/webhook', { method: 'POST', body: JSON.stringify({ from, body }) }),
 

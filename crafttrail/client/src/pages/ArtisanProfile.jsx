@@ -11,6 +11,10 @@ import CultureCards from '../components/CultureCards.jsx';
 import { api } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { inr, shortDate } from '../lib/format.js';
+
+/** Same tiers as server priceFromTrust */
+const priceFromTrust = (s = 0) =>
+  s >= 80 ? 2500 : s >= 65 ? 1800 : s >= 50 ? 1200 : 1000;
 import './ArtisanProfile.css';
 
 export default function ArtisanProfile() {
@@ -200,14 +204,15 @@ export default function ArtisanProfile() {
             <TrustLadder artisan={a} />
           </div>
 
-          {a.workshop?.priceInr > 0 && (
+          {a.workshop?.title && (
             <div className="card pad-card">
               <span className="eyebrow">Workshop</span>
               <h3 className="ws__title">{a.workshop.title}</h3>
               <p className="ws__meta mono">
                 {a.workshop.durationMins} min · up to {a.workshop.capacity} people
               </p>
-              <p className="ws__price">{inr(a.workshop.priceInr)}<span> per person</span></p>
+              <p className="ws__price">{inr(priceFromTrust(a.trustScore))}<span> per person</span></p>
+              <p className="ws__price-note">Price reflects trust score ({a.trustScore}/100)</p>
               <BookingPanel artisan={a} onChanged={load} />
             </div>
           )}
@@ -225,7 +230,7 @@ export default function ArtisanProfile() {
             <div style={{ height: 460 }}>
               <RagChatbot
                 artisanName={a.name}
-                context={`Artisan: ${a.name}\nCraft: ${a.craft}\nLocation: ${a.cluster?.name || ''}, ${a.district}, ${a.state}\nBio: ${a.bio || ''}\nAvailability: ${a.availability?.state || ''}\nTrust score: ${a.trustScore}/100\nHeritage: ${a.cluster?.heritageNote || ''}\nWorkshop: ${a.workshop?.title || 'N/A'}, ${a.workshop?.durationMins || ''}min, ₹${a.workshop?.priceInr || 'N/A'} per person\nLanguages: ${a.languages?.join(', ') || ''}`}
+                context={`Artisan: ${a.name}\nCraft: ${a.craft}\nLocation: ${a.cluster?.name || ''}, ${a.district}, ${a.state}\nBio: ${a.bio || ''}\nAvailability: ${a.availability?.state || ''}\nTrust score: ${a.trustScore}/100\nHeritage: ${a.cluster?.heritageNote || ''}\nWorkshop: ${a.workshop?.title || 'N/A'}, ${a.workshop?.durationMins || ''}min, ₹${priceFromTrust(a.trustScore)} per person\nLanguages: ${a.languages?.join(', ') || ''}`}
               />
             </div>
           </div>

@@ -9,12 +9,14 @@
 .ex__locnote { margin-top: 16px; }
 
 .ex__controls {
-  display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px; align-items: flex-end;
   margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line);
 }
 .ctl { display: flex; flex-direction: column; gap: 6px; }
-.ctl .select { min-width: 190px; }
-.ctl--radius { min-width: 190px; }
+.ctl .select { width: 100%; min-width: 0; }
+.ctl--radius { min-width: 0; }
 .ctl--radius input { accent-color: var(--accent); width: 100%; background: transparent; }
 
 .ex__interests { margin-top: 20px; }
@@ -38,23 +40,27 @@
 .ichip--clear { border-style: dashed; color: var(--accent); }
 
 .ex__board {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-  padding-bottom: 60px; align-items: start;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "map list";
+  gap: 20px;
+  padding-bottom: 60px;
+  align-items: start;
 }
 .ex__map {
+  grid-area: map;
   position: sticky; top: 86px;
   height: calc(100vh - 120px); min-height: 460px;
   overflow: hidden; padding: 0;
 }
-.ex__list { display: flex; flex-direction: column; gap: 11px; }
+.ex__list { grid-area: list; display: flex; flex-direction: column; gap: 11px; }
 .ex__count { font-size: .84rem; color: var(--ink-mid); padding: 2px 2px 6px; }
 .ex__loading { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-dim); }
 
 @media (max-width: 980px) {
-  .ex__board { grid-template-columns: 1fr; }
+  .ex__board { grid-template-columns: 1fr; grid-template-areas: "map" "list"; }
   .ex__map { position: static; height: 340px; min-height: 0; }
-  .ctl .select, .ctl--radius { min-width: 100%; }
-  .ctl { width: 100%; }
+  .ex__controls { grid-template-columns: 1fr 1fr; }
 }
 
 /* Standalone artisans divider */
@@ -78,25 +84,23 @@
   border-radius: 99px;
 }
 .ex__chips-toggle:hover { border-color: var(--accent); }
-.ex__statepanel {
-  margin: 20px auto;
-  padding: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-}
 .ex__statepanel-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
+.ex__statepanel-head h3 { font-size: .95rem; margin: 0; }
 .ex__statevillages {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(100vh - 240px);
 }
 .ex__village {
   display: flex;
@@ -106,9 +110,9 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   cursor: pointer;
-  transition: border-color .2s ease, transform .2s ease;
+  transition: border-color .2s ease, background .2s ease;
 }
-.ex__village:hover { border-color: var(--accent); transform: translateY(-2px); }
+.ex__village:hover { border-color: var(--accent); background: var(--surface); }
 .ex__village strong { font-size: .9rem; }
 .ex__village span { font-size: .76rem; color: var(--ink-mid); }
 .ex__village .mono { color: var(--ink-dim); font-size: .7rem; } 
