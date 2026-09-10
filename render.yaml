@@ -1,0 +1,46 @@
+services:
+  # ── CraftTrail Node.js Backend ──────────────────────────────────────
+  - type: web
+    name: crafttrail-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false    # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: CERT_SIGNING_SECRET
+        sync: false
+      - key: CLIENT_URL
+        value: https://craft-trail.vercel.app
+      - key: OCR_MODE
+        value: mock
+      - key: ARTISAN_SHARE
+        value: "95"
+      - key: INSTITUTION_SHARE
+        value: "5"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  # ── CraftTrail RAG Python Service ───────────────────────────────────
+  - type: web
+    name: crafttrail-rag
+    runtime: python
+    plan: free
+    rootDir: rag
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.6"
+      - key: MONGO_URI
+        sync: false    # Set manually in Render dashboard
+      - key: CHROMA_DB_PATH
+        value: ./chroma_db

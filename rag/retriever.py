@@ -232,15 +232,6 @@ def answer(question: str, context: str = "", chat_history: list[dict] = None) ->
         "sources":   [],
         "retrieved": len(chunks),
     }
-    # ── Local generation ───────────────────────────────────────────────────
-    sentences   = _extract_best_sentences(chunks, question, max_sentences=8)
-    answer_text = _format_answer(question, sentences, chunks)
-
-    return {
-        "answer":    answer_text,
-        "sources":   [],
-        "retrieved": len(chunks),
-    }
 
 
 def status() -> dict:
@@ -253,6 +244,5 @@ def status() -> dict:
         "indexed": count,
         "ready":   count > 0,
         "message": f"{count} chunks indexed in ChromaDB" if count > 0 else "Empty. Run python ingest.py",
-        "model":   "local-extractive (no API required)",
-        "groq_configured": True,   # kept for frontend compatibility — always True now
+        "model":   "local-extractive (ChromaDB + keyword ranking)",
     }
