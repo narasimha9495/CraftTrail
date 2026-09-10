@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import chromadb
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # ── Config ────────────────────────────────────────────────────────────
@@ -27,9 +27,9 @@ MONGO_URI     = os.getenv("MONGO_URI", "mongodb://localhost:27017/crafttrail")
 DATA_DIR      = Path(__file__).parent / "data"
 COLLECTION    = "crafttrail_knowledge"
 
-embedding_fn = SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2"   # ~90 MB, downloads once, runs locally
-)
+# DefaultEmbeddingFunction uses all-MiniLM-L6-v2 via ONNX runtime
+# Same model quality as SentenceTransformers but ~3x less memory
+embedding_fn = DefaultEmbeddingFunction()
 
 client     = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = client.get_or_create_collection(

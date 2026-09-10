@@ -14,13 +14,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import chromadb
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 
 CHROMA_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
 COLLECTION  = "crafttrail_knowledge"
 
 # ── Clients ────────────────────────────────────────────────────────────────
-embedding_fn  = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+# DefaultEmbeddingFunction uses all-MiniLM-L6-v2 via ONNX runtime
+# Same model quality as SentenceTransformers but ~3x less memory (~150MB vs ~500MB)
+embedding_fn  = DefaultEmbeddingFunction()
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
 # ── Stop-words to ignore when scoring relevance ────────────────────────────

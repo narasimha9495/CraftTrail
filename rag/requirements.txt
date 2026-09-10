@@ -1,5 +1,5 @@
 chromadb
-sentence-transformers
+onnxruntime
 flask
 flask-cors
 pymongo
