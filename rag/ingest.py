@@ -59,13 +59,13 @@ def add_chunks(texts: list[str], ids_prefix: str, meta: dict = {}):
 # ── 1. Built-in state knowledge ───────────────────────────────────────
 STATE_KNOWLEDGE = {
     "Telangana": {
-        "crafts": ["Pochampally Ikat", "Gadwal Sarees", "Nirmal Paintings", "Bidri Work", "Pembarthi Metal Craft"],
-        "culture": "Rich Deccan heritage blending Telugu and Urdu traditions. Famous for Kuchipudi dance, Perini Shivatandavam, and Bonalu festivals.",
-        "products": ["Pochampally Ikat sarees & dress materials", "Gadwal silk-cotton sarees", "Nirmal lacquered furniture & toys", "Bidriware vases, boxes & jewellery"],
-        "gi": ["Pochampally Ikat", "Gadwal Sarees", "Nirmal Toys", "Bidriware"],
-        "clusters": ["Pochampally — 50km from Hyderabad", "Gadwal — 180km from Hyderabad", "Nirmal — 300km north", "Karimnagar for silver filigree"],
-        "history": "Pochampally weavers have practiced Ikat for over 500 years. Each thread is resist-dyed before weaving. A single Pochampally Ikat saree has over 5000 individual thread-tie-and-dye operations.",
-        "visit": "Best visited October–March. Pochampally village has a Handloom Park where you can watch Ikat weaving live.",
+        "crafts": ["Pochampally Ikat Sarees", "Gadwal Sarees", "Nirmal Paintings & Toys", "Pembarthi Metal Craft", "Warangal Durries"],
+        "culture": "Rich Deccan heritage blending Telugu and Urdu traditions. Famous for Kuchipudi dance, Perini Shivatandavam, and Bonalu festivals. Hyderabad is the gateway to Telangana's crafts.",
+        "products": ["Pochampally Ikat silk & cotton sarees — Telangana's most famous craft", "Gadwal silk-cotton sarees with kuttu borders", "Nirmal lacquered furniture, toys & paintings", "Pembarthi brass sheet metal craft", "Warangal cotton durrie rugs"],
+        "gi": ["Pochampally Ikat", "Gadwal Sarees", "Nirmal Toys", "Warangal Durries"],
+        "clusters": ["Pochampally (Bhoodan Pochampally) — just 50km from Hyderabad, UN-recognised Best Tourism Village", "Gadwal — 180km from Hyderabad, famous for kuttu border sarees", "Nirmal — 300km north of Hyderabad, lacquerware hub", "Karimnagar — silver filigree work", "Warangal — durrie weaving tradition"],
+        "history": "Pochampally Ikat is Telangana's signature craft, practiced for over 500 years. The warp and weft yarns are resist-dyed before weaving so the pattern exists in the thread. A single Pochampally Ikat saree requires over 5,000 individual thread-tie-and-dye operations. Pochampally village has 5,000+ active looms.",
+        "visit": "For visitors to Hyderabad: Pochampally village (50km away, 1-hour drive) is a must — it has a Handloom Park where you can watch Ikat weaving live. Best visited October–March. The village was recognised as a UN Best Tourism Village.",
     },
     "Andhra Pradesh": {
         "crafts": ["Kalamkari", "Kondapalli Toys", "Etikoppaka Lacware", "Dharmavaram Silk", "Uppada Jamdani"],
