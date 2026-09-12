@@ -871,13 +871,13 @@ Description: Master craft specialist creating premium Pochampally Ikat. Register
 ODOP Product: Pochampally Ikat Specialty
 Address: Artisan Cluster, Yadadri Bhuvanagiri, Telangana
 
-Craft: Bidri Sheet Ware
+Craft: Pembarthi Metal Craft
 District: Hyderabad, Telangana
 Location: [17.3850, 78.4867]
 Cultural Significance: 8/10
 Heritage: Silver wire layouts inlaid into dark zinc-copper alloy matrices blackened with clay mud.
-Description: Master craft specialist creating premium Bidri Sheet Ware. Registered generational family unit.
-ODOP Product: Bidri Sheet Ware Specialty
+Description: Master craft specialist creating premium Pembarthi Metal Craft. Registered generational family unit.
+ODOP Product: Pembarthi Metal Craft Specialty
 Address: Artisan Cluster, Hyderabad, Telangana
 
 Craft: Silver Filigree
