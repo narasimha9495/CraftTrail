@@ -11,3 +11,4 @@ tiktoken
 langchain-text-splitters
 langchain-community
 gunicorn
+groq
