@@ -240,32 +240,96 @@ export default function Explore({ personalised = false }) {
 
         {allCrafts.length > 0 && (
           <div className="ex__interests">
-            <span className="eyebrow">Interested in</span>
-            <div className={`ex__chips ${showAllChips ? 'is-expanded' : ''}`}>
-              {(showAllChips ? allCrafts : allCrafts.slice(0, 8)).map((c) => (
-                <button
-                  key={c}
-                  className={`ichip ${interests.includes(c) ? 'is-on' : ''}`}
-                  aria-pressed={interests.includes(c)}
-                  onClick={() => toggleCraft(c)}
-                >
-                  {c}
-                </button>
-              ))}
-              {interests.length > 0 && (
-                <button className="ichip ichip--clear" onClick={() => { setInterests([]); setParams({}, { replace: true }); }}>
-                  Clear {interests.length}
-                </button>
-              )}
-            </div>
-            {allCrafts.length > 8 && (
-              <button
-                className="ex__chips-toggle"
-                onClick={() => setShowAllChips((v) => !v)}
+            <label className="ctl">
+              <span className="eyebrow">Region</span>
+              <select
+                className="select"
+                value={params.get('region') || ''}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setParams(prev => {
+                    const next = new URLSearchParams(prev);
+                    if (v) next.set('region', v); else next.delete('region');
+                    next.delete('filterState');
+                    setInterests([]);
+                    next.delete('crafts');
+                    return next;
+                  }, { replace: true });
+                }}
               >
-                {showAllChips ? 'Show fewer' : `+${allCrafts.length - 8} more crafts`}
-              </button>
-            )}
+                <option value="">— All Regions —</option>
+                <option value="North">North India</option>
+                <option value="South">South India</option>
+                <option value="East">East India</option>
+                <option value="West">West India</option>
+                <option value="Northeast">Northeast India</option>
+                <option value="Central">Central India</option>
+              </select>
+            </label>
+
+            <label className="ctl">
+              <span className="eyebrow">State</span>
+              <select
+                className="select"
+                value={params.get('filterState') || ''}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setParams(prev => {
+                    const next = new URLSearchParams(prev);
+                    if (v) next.set('filterState', v); else next.delete('filterState');
+                    setInterests([]);
+                    next.delete('crafts');
+                    return next;
+                  }, { replace: true });
+                }}
+              >
+                <option value="">— All States —</option>
+                {(() => {
+                  const REGION_STATES = {
+                    'North': ['Jammu & Kashmir', 'Himachal Pradesh', 'Punjab', 'Uttarakhand', 'Uttar Pradesh', 'Haryana', 'Delhi', 'Chandigarh'],
+                    'South': ['Telangana', 'Andhra Pradesh', 'Karnataka', 'Tamil Nadu', 'Kerala', 'Goa'],
+                    'East': ['West Bengal', 'Odisha', 'Bihar', 'Jharkhand'],
+                    'West': ['Rajasthan', 'Gujarat', 'Maharashtra'],
+                    'Northeast': ['Assam', 'Meghalaya', 'Manipur', 'Tripura', 'Nagaland', 'Mizoram', 'Arunachal Pradesh', 'Sikkim'],
+                    'Central': ['Madhya Pradesh', 'Chhattisgarh'],
+                  };
+                  const region = params.get('region');
+                  const stateList = region && REGION_STATES[region]
+                    ? allStates.filter(s => REGION_STATES[region].includes(s))
+                    : allStates;
+                  return stateList.map(s => <option key={s} value={s}>{s}</option>);
+                })()}
+              </select>
+            </label>
+
+            <label className="ctl">
+              <span className="eyebrow">Craft</span>
+              <select
+                className="select"
+                value={interests[0] || ''}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v) {
+                    setInterests([v]);
+                    setParams(prev => {
+                      const next = new URLSearchParams(prev);
+                      next.set('crafts', v);
+                      return next;
+                    }, { replace: true });
+                  } else {
+                    setInterests([]);
+                    setParams(prev => {
+                      const next = new URLSearchParams(prev);
+                      next.delete('crafts');
+                      return next;
+                    }, { replace: true });
+                  }
+                }}
+              >
+                <option value="">— All Crafts —</option>
+                {allCrafts.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
           </div>
         )}
       </header>

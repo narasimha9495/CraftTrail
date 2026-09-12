@@ -19,8 +19,8 @@
 .ctl--radius { min-width: 0; }
 .ctl--radius input { accent-color: var(--accent); width: 100%; background: transparent; }
 
-.ex__interests { margin-top: 20px; }
-.ex__interests .eyebrow { display: block; margin-bottom: 9px; }
+.ex__interests { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.ex__interests .ctl { min-width: 160px; }
 .ex__chips {
   display: flex;
   flex-wrap: wrap;
